@@ -111,7 +111,7 @@ struct GradientStopsEditor: View {
                 let color = last?.color ?? .white
                 stops.append(GradientStop(color: color, location: min(1, (last?.location ?? 0.5) * 0.5 + 0.5)))
             } label: {
-                Label("Añadir color", systemImage: "plus.circle")
+                Label("Add Color", systemImage: "plus.circle")
             }
             .buttonStyle(.borderless)
             .disabled(stops.count >= 12)

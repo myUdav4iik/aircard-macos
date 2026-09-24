@@ -7,7 +7,7 @@ enum InspectorTab: String, CaseIterable, Identifiable {
     case layers, adjustments
 
     var id: String { rawValue }
-    var label: String { AirCardL10n.text(self == .layers ? "Capas" : "Ajustes") }
+    var label: String { AirCardL10n.text(self == .layers ? "Layers" : "Adjustments") }
 }
 
 @MainActor
@@ -138,7 +138,7 @@ final class StudioModel: ObservableObject {
     }
 
     func newDocument() {
-        document = SkinDocument(name: AirCardL10n.text("Sin título"), layers: [SkinLayerKind.solid.defaultLayer])
+        document = SkinDocument(name: AirCardL10n.text("Untitled"), layers: [SkinLayerKind.solid.defaultLayer])
         selectedLayerID = document.layers.first?.id
         documentURL = nil
     }
@@ -152,7 +152,7 @@ final class StudioModel: ObservableObject {
         let panel = NSOpenPanel()
         panel.allowedContentTypes = [.png, .jpeg, .webP, .heic, .image]
         panel.allowsMultipleSelection = true
-        panel.message = AirCardL10n.text("Elige una o varias imágenes para añadirlas como capas.")
+        panel.message = AirCardL10n.text("Choose one or more images to add as layers.")
         guard panel.runModal() == .OK else { return }
         for url in panel.urls {
             addPhoto(url: url)
@@ -163,7 +163,7 @@ final class StudioModel: ObservableObject {
     func addPhoto(url: URL) {
         guard let data = try? Data(contentsOf: url),
               CGImageSourceCreateWithData(data as CFData, nil) != nil else {
-            errorMessage = AirCardL10n.format("No pude leer la imagen %@.", url.lastPathComponent)
+            errorMessage = AirCardL10n.format("Could not read image %@.", url.lastPathComponent)
             return
         }
         let id = UUID()
@@ -213,7 +213,7 @@ final class StudioModel: ObservableObject {
         guard let layer = document.layers.first(where: { $0.id == id }) else { return }
         var copy = layer
         copy.id = UUID()
-        copy.name = AirCardL10n.format("%@ copia", layer.name)
+        copy.name = AirCardL10n.format("%@ copy", layer.name)
         insert(copy)
     }
 
@@ -328,8 +328,8 @@ final class StudioModel: ObservableObject {
         panel.canChooseDirectories = true
         panel.canChooseFiles = false
         panel.canCreateDirectories = true
-        panel.prompt = AirCardL10n.text("Guardar aquí")
-        panel.message = AirCardL10n.format("Se creará una carpeta con los 11 archivos de Wallet, el .%@ y tus imágenes originales.", SkinDocument.fileExtension)
+        panel.prompt = AirCardL10n.text("Save Here")
+        panel.message = AirCardL10n.format("A folder will be created with the 11 Wallet files, the .%@ file, and your original images.", SkinDocument.fileExtension)
         guard panel.runModal() == .OK, let directory = panel.url else { return nil }
         let document = document
         let folder = directory.appendingPathComponent("\(document.name)-wallet", isDirectory: true)

@@ -33,7 +33,7 @@ struct PasscodeThemeService: Sendable {
             timeout: .seconds(30)
         )
         guard result.status == 0 else {
-            throw AirCardError.processFailed(AirCardL10n.format("No pude abrir el paquete .passthm: %@", result.stderrString.trimmingCharacters(in: .whitespacesAndNewlines)))
+            throw AirCardError.processFailed(AirCardL10n.format("Could not open .passthm package: %@", result.stderrString.trimmingCharacters(in: .whitespacesAndNewlines)))
         }
 
         let files = (FileManager.default.enumerator(
@@ -51,7 +51,7 @@ struct PasscodeThemeService: Sendable {
         }
 
         guard !files.isEmpty else {
-            throw AirCardError.processFailed(AirCardL10n.text("El paquete .passthm no contiene imágenes de teclado."))
+            throw AirCardError.processFailed(AirCardL10n.text("The .passthm package does not contain keyboard images."))
         }
 
         var byVersion: [String: [String: PasscodeAsset]] = [:]
@@ -72,7 +72,7 @@ struct PasscodeThemeService: Sendable {
         }
 
         guard !byVersion.isEmpty || !unversioned.isEmpty else {
-            throw AirCardError.processFailed(AirCardL10n.text("No pude leer los assets del paquete .passthm."))
+            throw AirCardError.processFailed(AirCardL10n.text("Could not read assets from .passthm package."))
         }
 
         let detected = Self.telephonyVersions.first(where: { byVersion[$0]?.isEmpty == false }) ?? "TelephonyUI-10"
@@ -86,7 +86,7 @@ struct PasscodeThemeService: Sendable {
 
     func preview(theme: PasscodeTheme, color: PasscodeTint, targetVersion: String) throws -> Data {
         guard let asset = theme.assets(for: targetVersion).first(where: { $0.isImage }) else {
-            throw AirCardError.processFailed(AirCardL10n.text("No hay una tecla de imagen para mostrar."))
+            throw AirCardError.processFailed(AirCardL10n.text("There is no image key to show."))
         }
         return try Self.recolor(asset.data, tint: color)
     }
@@ -131,7 +131,7 @@ struct PasscodeThemeService: Sendable {
     ) async throws -> [(String, Data)] {
         let selectedAssets = theme.assets(for: targetVersion)
         guard !selectedAssets.isEmpty else {
-            throw AirCardError.processFailed(AirCardL10n.format("El tema no tiene assets para %@.", targetVersion))
+            throw AirCardError.processFailed(AirCardL10n.format("The theme has no assets for %@.", targetVersion))
         }
         let files = try await Task.detached(priority: .userInitiated) {
             try Self.recoloredFiles(
@@ -143,7 +143,7 @@ struct PasscodeThemeService: Sendable {
             )
         }.value
         guard !files.isEmpty else {
-            throw AirCardError.processFailed(AirCardL10n.text("No encontré imágenes válidas para recolorear."))
+            throw AirCardError.processFailed(AirCardL10n.text("Did not find valid images to recolor."))
         }
         return files
     }
@@ -163,7 +163,7 @@ struct PasscodeThemeService: Sendable {
             timeout: .seconds(60)
         )
         guard result.status == 0 else {
-            throw AirCardError.processFailed(AirCardL10n.format("No pude crear el .passthm: %@", result.stderrString.trimmingCharacters(in: .whitespacesAndNewlines)))
+            throw AirCardError.processFailed(AirCardL10n.format("Could not create .passthm: %@", result.stderrString.trimmingCharacters(in: .whitespacesAndNewlines)))
         }
         if FileManager.default.fileExists(atPath: destination.path) {
             try FileManager.default.removeItem(at: destination)
@@ -183,7 +183,7 @@ struct PasscodeThemeService: Sendable {
     ) async throws -> PasscodeFlashResult {
         try Task.checkCancellation()
         let boldText = bold ? "-bold" : ""
-        await progress(AirCardL10n.format("Preparando variante --%@%@ (%@) con glifos %@…", variant.rawValue, boldText, language.label, Self.hex(color)))
+        await progress(AirCardL10n.format("Preparing --%@%@ variant (%@) with glyphs %@…", variant.rawValue, boldText, language.label, Self.hex(color)))
         let files = try await preparedFiles(
             theme: theme,
             color: color,
@@ -202,20 +202,20 @@ struct PasscodeThemeService: Sendable {
             try Task.checkCancellation()
             let end = min(start + chunkSize, files.count)
             let chunk = Array(files[start..<end])
-            await progress(AirCardL10n.format("Escribiendo teclas %d/%d en %@…", end, files.count, targetVersion))
+            await progress(AirCardL10n.format("Writing keys %d/%d to %@…", end, files.count, targetVersion))
             guard try await writer.writeFiles(
                 device: device,
                 target: target,
                 files: chunk,
                 progress: progress
             ) else {
-                throw AirCardError.processFailed(AirCardL10n.format("No se pudieron escribir las teclas en la caché de %@.", targetVersion))
+                throw AirCardError.processFailed(AirCardL10n.format("Could not write keys to %@ cache.", targetVersion))
             }
             written += chunk.count
             start = end
         }
 
-        await progress(AirCardL10n.text("Color aplicado. Bloquea el iPhone para comprobar el teclado."))
+        await progress(AirCardL10n.text("Color applied. Lock the iPhone to verify the keyboard."))
         return PasscodeFlashResult(themeName: theme.name, targetVersion: targetVersion, assetCount: written)
     }
 
@@ -362,7 +362,7 @@ struct PasscodeThemeService: Sendable {
                 space: CGColorSpaceCreateDeviceRGB(),
                 bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue
               ) else {
-            throw AirCardError.processFailed(AirCardL10n.text("No pude leer una imagen de tecla."))
+            throw AirCardError.processFailed(AirCardL10n.text("Could not read a key image."))
         }
 
         let rect = CGRect(x: 0, y: 0, width: image.width, height: image.height)
@@ -387,7 +387,7 @@ struct PasscodeThemeService: Sendable {
         }
 
         guard let output = context.makeImage() else {
-            throw AirCardError.processFailed(AirCardL10n.text("No pude generar la imagen recoloreada."))
+            throw AirCardError.processFailed(AirCardL10n.text("Could not generate recolored image."))
         }
         let destinationData = NSMutableData()
         guard let destination = CGImageDestinationCreateWithData(
@@ -396,11 +396,11 @@ struct PasscodeThemeService: Sendable {
             1,
             nil
         ) else {
-            throw AirCardError.processFailed(AirCardL10n.text("No pude crear el PNG recoloreado."))
+            throw AirCardError.processFailed(AirCardL10n.text("Could not create recolored PNG."))
         }
         CGImageDestinationAddImage(destination, output, nil)
         guard CGImageDestinationFinalize(destination) else {
-            throw AirCardError.processFailed(AirCardL10n.text("No pude finalizar el PNG recoloreado."))
+            throw AirCardError.processFailed(AirCardL10n.text("Could not finalize recolored PNG."))
         }
         return destinationData as Data
     }

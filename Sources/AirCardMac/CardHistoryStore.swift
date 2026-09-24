@@ -86,7 +86,7 @@ enum SkinExporter {
 
     private static func sanitized(_ name: String) -> String {
         let cleaned = name.replacingOccurrences(of: "/", with: "-").replacingOccurrences(of: ":", with: "-")
-        return cleaned.isEmpty ? "imagen" : cleaned
+        return cleaned.isEmpty ? "image" : cleaned
     }
 
     private static func imageExtension(_ data: Data) -> String {
@@ -112,7 +112,7 @@ enum SkinFile {
         do {
             return try JSONDecoder().decode(SkinDocument.self, from: data)
         } catch {
-            throw AirCardError.processFailed(AirCardL10n.format("El archivo .%@ no es válido: %@", SkinDocument.fileExtension, error.localizedDescription))
+            throw AirCardError.processFailed(AirCardL10n.format("The .%@ file is not valid: %@", SkinDocument.fileExtension, error.localizedDescription))
         }
     }
 }

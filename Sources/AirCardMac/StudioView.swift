@@ -16,58 +16,58 @@ struct StudioView: View {
                 .inspectorColumnWidth(min: 300, ideal: 330, max: 420)
         }
         .navigationTitle(studio.document.name)
-        .navigationSubtitle(studio.isDirty ? AirCardL10n.text("Editado") : "")
+        .navigationSubtitle(studio.isDirty ? AirCardL10n.text("Edited") : "")
         .toolbar {
             ToolbarItemGroup(placement: .navigation) {
                 Button { studio.undo() } label: { Image(systemName: "arrow.uturn.backward") }
-                    .help("Deshacer")
+                    .help("Undo")
                     .disabled(!studio.canUndo)
                 Button { studio.redo() } label: { Image(systemName: "arrow.uturn.forward") }
-                    .help("Rehacer")
+                    .help("Redo")
                     .disabled(!studio.canRedo)
             }
             ToolbarItemGroup(placement: .primaryAction) {
                 Menu {
-                    Button("Nuevo diseño") { studio.newDocument() }
-                    Button(AirCardL10n.format("Abrir .%@…", SkinDocument.fileExtension)) { studio.open() }
+                    Button("New Design") { studio.newDocument() }
+                    Button(AirCardL10n.format("Open .%@…", SkinDocument.fileExtension)) { studio.open() }
                     Divider()
-                    Button("Guardar") { studio.save() }
-                    Button("Guardar como…") { studio.save(as: true) }
+                    Button("Save") { studio.save() }
+                    Button("Save As…") { studio.save(as: true) }
                     Divider()
-                    Button("Descargar assets…") { model.exportStudioAssets() }
+                    Button("Download Assets…") { model.exportStudioAssets() }
                 } label: {
-                    Label("Archivo", systemImage: "doc")
+                    Label("File", systemImage: "doc")
                 }
-                .help("Abrir, guardar o descargar el diseño")
+                .help("Open, save, or download the design")
 
                 Button { studio.importPhoto() } label: {
-                    Label("Añadir imagen", systemImage: "photo.badge.plus")
+                    Label("Add Image", systemImage: "photo.badge.plus")
                 }
-                .help("Añadir una imagen como capa")
+                .help("Add an image as a layer")
 
                 TargetCardMenu(model: model)
 
                 Button {
                     model.isBusy ? model.cancel() : model.flashSkin()
                 } label: {
-                    Label(AirCardL10n.text(model.isBusy ? "Cancelar" : "Aplicar"), systemImage: model.isBusy ? "xmark.circle" : "iphone.and.arrow.forward")
+                    Label(AirCardL10n.text(model.isBusy ? "Cancel" : "Apply"), systemImage: model.isBusy ? "xmark.circle" : "iphone.and.arrow.forward")
                         .labelStyle(.titleAndIcon)
                 }
                 .buttonStyle(.borderedProminent)
                 .disabled(!model.isBusy && (model.selectedDeviceID.isEmpty || !model.isCardHashValid))
                 .help(model.isCardHashValid
-                    ? AirCardL10n.format("Escribir el diseño en «%@»", model.targetCardLabel)
-                    : AirCardL10n.text("Primero elige una tarjeta en la barra lateral"))
+                    ? AirCardL10n.format("Write design to "%@"", model.targetCardLabel)
+                    : AirCardL10n.text("First choose a card in the sidebar"))
 
                 Button {
                     studio.showInspector.toggle()
                 } label: {
                     Label("Inspector", systemImage: "sidebar.right")
                 }
-                .help("Mostrar u ocultar el inspector")
+                .help("Show or hide the inspector")
             }
         }
-        .alert("No se pudo completar", isPresented: Binding(
+        .alert("Could Not Complete", isPresented: Binding(
             get: { studio.errorMessage != nil },
             set: { if !$0 { studio.errorMessage = nil } }
         )) {
@@ -84,7 +84,7 @@ private struct TargetCardMenu: View {
     var body: some View {
         Menu {
             if model.cards.isEmpty {
-                Text("Sin tarjetas: usa «Detectar desde Wallet»")
+                Text("No cards: use "Detect from Wallet"")
             }
             ForEach(model.cards.sorted { $0.lastSeen > $1.lastSeen }) { card in
                 Button {
@@ -98,10 +98,10 @@ private struct TargetCardMenu: View {
                 }
             }
         } label: {
-            Label(AirCardL10n.text(model.isCardHashValid ? model.targetCardLabel : "Elegir tarjeta"), systemImage: "creditcard")
+            Label(AirCardL10n.text(model.isCardHashValid ? model.targetCardLabel : "Choose Card"), systemImage: "creditcard")
                 .labelStyle(.titleAndIcon)
         }
-        .help("Tarjeta destino")
+        .help("Target Card")
     }
 }
 
@@ -200,7 +200,7 @@ struct CardCanvas: View {
                     studio.setLiveTilt(nil)
                 }
         )
-        .help("Arrastra la tarjeta para inclinarla y ver cómo se mueven los reflejos")
+        .help("Drag the card to tilt it and see reflections move")
     }
 
     private var controls: some View {
@@ -214,16 +214,16 @@ struct CardCanvas: View {
             } icon: {
                 Image(systemName: "gyroscope")
             }
-            .help("Inclinación con la que se exportan los reflejos")
+            .help("Tilt used when exporting reflections")
 
             Toggle(isOn: $studio.showSafeZones) {
-                Label("Zonas de Wallet", systemImage: "rectangle.dashed")
+                Label("Wallet Zones", systemImage: "rectangle.dashed")
             }
             .toggleStyle(.button)
-            .help("Muestra la franja visible en la pila de Wallet y las esquinas")
+            .help("Shows the visible strip in the Wallet stack and corners")
 
             Text(studio.usesTilt
-                ? AirCardL10n.text("Arrastra la tarjeta para ver los reflejos")
+                ? AirCardL10n.text("Drag the card to see reflections")
                 : AirCardL10n.text("1536 × 969 · PNG 3x/2x + PDF"))
                 .font(.caption)
                 .foregroundStyle(.secondary)
@@ -248,7 +248,7 @@ private struct SafeZonesOverlay: View {
                     .stroke(style: StrokeStyle(lineWidth: 1, dash: [5, 4]))
                     .foregroundStyle(.white.opacity(0.7))
                     .frame(height: stackHeight)
-                Text("Visible en la pila de Wallet (aprox.)")
+                Text("Visible in Wallet stack (approx.)")
                     .font(.caption2.weight(.medium))
                     .foregroundStyle(.white)
                     .padding(.horizontal, 6)
@@ -297,8 +297,8 @@ private struct PresetStrip: View {
                     }
                     .buttonStyle(.plain)
                     .help(studio.hasPhoto
-                        ? AirCardL10n.format("Aplicar %@ conservando tu foto cuando el estilo la usa", AirCardL10n.text(preset.name))
-                        : AirCardL10n.format("Aplicar %@", AirCardL10n.text(preset.name)))
+                        ? AirCardL10n.format("Apply %@ while preserving your photo when the style uses it", AirCardL10n.text(preset.name))
+                        : AirCardL10n.format("Apply %@", AirCardL10n.text(preset.name)))
                 }
             }
             .padding(.horizontal, 20)

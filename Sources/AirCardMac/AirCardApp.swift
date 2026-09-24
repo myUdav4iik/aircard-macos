@@ -23,59 +23,59 @@ struct AirCardCommands: Commands {
 
     var body: some Commands {
         CommandGroup(replacing: .newItem) {
-            Button("Nuevo diseño") { studio.newDocument() }
+            Button("New Design") { studio.newDocument() }
                 .keyboardShortcut("n")
-            Button("Abrir diseño…") { studio.open() }
+            Button("Open Design…") { studio.open() }
                 .keyboardShortcut("o")
         }
         CommandGroup(replacing: .saveItem) {
-            Button("Guardar diseño") { studio.save() }
+            Button("Save Design") { studio.save() }
                 .keyboardShortcut("s")
-            Button("Guardar diseño como…") { studio.save(as: true) }
+            Button("Save Design As…") { studio.save(as: true) }
                 .keyboardShortcut("s", modifiers: [.command, .shift])
             Divider()
-            Button("Descargar assets…") { model.exportStudioAssets() }
+            Button("Download Assets…") { model.exportStudioAssets() }
                 .keyboardShortcut("e", modifiers: [.command, .shift])
         }
         CommandGroup(replacing: .undoRedo) {
-            Button("Deshacer") { studio.undo() }
+            Button("Undo") { studio.undo() }
                 .keyboardShortcut("z")
                 .disabled(!studio.canUndo)
-            Button("Rehacer") { studio.redo() }
+            Button("Redo") { studio.redo() }
                 .keyboardShortcut("z", modifiers: [.command, .shift])
                 .disabled(!studio.canRedo)
         }
-        CommandMenu("Diseño") {
-            Button("Añadir imagen…") { studio.importPhoto() }
+        CommandMenu("Design") {
+            Button("Add Image…") { studio.importPhoto() }
                 .keyboardShortcut("i", modifiers: [.command, .shift])
-            Menu("Añadir capa") {
+            Menu("Add Layer") {
                 ForEach(SkinLayerKind.allCases) { kind in
                     Button(SkinLayerContent.defaultContent(for: kind).kindLabel) { studio.addLayer(kind) }
                 }
             }
-            Menu("Estilos") {
+            Menu("Styles") {
                 ForEach(SkinPresets.all) { preset in
                     Button(AirCardL10n.text(preset.name)) { studio.applyPreset(preset) }
                 }
             }
             Divider()
-            Button("Duplicar capa") {
+            Button("Duplicate Layer") {
                 if let id = studio.selectedLayerID { studio.duplicateLayer(id) }
             }
             .keyboardShortcut("d")
             .disabled(studio.selectedLayerID == nil)
-            Button("Eliminar capa") {
+            Button("Delete Layer") {
                 if let id = studio.selectedLayerID { studio.removeLayer(id) }
             }
             .keyboardShortcut(.delete)
             .disabled(studio.selectedLayerID == nil)
             Divider()
-            Button("Mostrar zonas de Wallet") { studio.showSafeZones.toggle() }
+            Button("Show Wallet Zones") { studio.showSafeZones.toggle() }
                 .keyboardShortcut("g", modifiers: [.command, .shift])
-            Button("Mostrar inspector") { studio.showInspector.toggle() }
+            Button("Show Inspector") { studio.showInspector.toggle() }
                 .keyboardShortcut("i", modifiers: [.command, .option])
             Divider()
-            Button("Aplicar a la tarjeta") { model.flashSkin() }
+            Button("Apply to Card") { model.flashSkin() }
                 .keyboardShortcut(.return)
                 .disabled(model.isBusy || !model.isCardHashValid || model.selectedDeviceID.isEmpty)
         }

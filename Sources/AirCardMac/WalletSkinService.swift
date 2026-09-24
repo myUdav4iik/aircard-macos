@@ -79,16 +79,16 @@ struct WalletSkinService: Sendable {
         )
         let cardHash = try validatedCardHash(rawHash)
         let target = "/var/mobile/Library/Passes/Cards/\(cardHash).pkpass"
-        await progress(AirCardL10n.text("Escribiendo solo foregroundColor en pass.json…"))
+        await progress(AirCardL10n.text("Writing only foregroundColor in pass.json…"))
         guard try await writeFiles(
             device: device,
             target: target,
             files: [("pass.json", data)],
             progress: progress
         ) else {
-            throw AirCardError.processFailed(AirCardL10n.text("No se pudo escribir el pass.json de la tarjeta."))
+            throw AirCardError.processFailed(AirCardL10n.text("Could not write card pass.json."))
         }
-        await progress(AirCardL10n.text("Color enviado. Cierra y abre Wallet para comprobar los números."))
+        await progress(AirCardL10n.text("Color sent. Close and reopen Wallet to check numbers."))
     }
 
     func invalidateCardCache(
@@ -103,7 +103,7 @@ struct WalletSkinService: Sendable {
         for suffix in [".cache", ".pkcache"] {
             try Task.checkCancellation()
             let target = "/var/mobile/Library/Passes/Cards/\(cardHash)\(suffix)"
-            await progress(AirCardL10n.format("Recreando caché Wallet: %@…", suffix))
+            await progress(AirCardL10n.format("Rebuilding Wallet cache: %@…", suffix))
             removedCount += try await removeCachedFiles(
                 device: device,
                 target: target,
@@ -127,10 +127,10 @@ struct WalletSkinService: Sendable {
 
         let assets = Self.artworkFiles(artwork)
         let cardTarget = "/var/mobile/Library/Passes/Cards/\(cardHash).pkpass"
-        await progress(AirCardL10n.text("Escribiendo assets canónicos de Wallet (cardBackgroundCombined, diffuse, background y strip)…"))
+        await progress(AirCardL10n.text("Writing canonical Wallet assets (cardBackgroundCombined, diffuse, background, and strip)…"))
 
-        await progress(AirCardL10n.text("Desbloquea el iPhone y abre Apple Books una vez antes de continuar…"))
-        await progress(AirCardL10n.text("Preparando la escritura atómica de la tarjeta…"))
+        await progress(AirCardL10n.text("Unlock iPhone and open Apple Books once before continuing…"))
+        await progress(AirCardL10n.text("Preparing atomic card write…"))
         var artworkWritten = false
         do {
             artworkWritten = try await writeBatch(
@@ -142,7 +142,7 @@ struct WalletSkinService: Sendable {
         } catch AirCardError.airTrafficUnavailable {
             throw AirCardError.airTrafficUnavailable
         } catch {
-            await progress(AirCardL10n.text("El lote de artwork falló; probando escritura individual…"))
+            await progress(AirCardL10n.text("Artwork batch failed; trying individual writes…"))
         }
         if !artworkWritten {
             var individualWritesSucceeded = true
@@ -162,7 +162,7 @@ struct WalletSkinService: Sendable {
             artworkWritten = individualWritesSucceeded
         }
         guard artworkWritten else {
-            throw AirCardError.processFailed(AirCardL10n.text("No se pudo escribir el artwork de la tarjeta."))
+            throw AirCardError.processFailed(AirCardL10n.text("Could not write card artwork."))
         }
 
         var cacheFilesRemoved = 0
@@ -172,14 +172,14 @@ struct WalletSkinService: Sendable {
                 cardHash: cardHash,
                 progress: progress
             )
-            await progress(AirCardL10n.format("Caché Wallet eliminada: %d archivos movidos para regeneración.", cacheFilesRemoved))
+            await progress(AirCardL10n.format("Wallet cache removed: %d files moved for regeneration.", cacheFilesRemoved))
         } catch {
             // Like the reference client, cache invalidation is best-effort;
             // the artwork write remains the success criterion.
-            await progress(AirCardL10n.format("No se pudo completar la limpieza real de caché; el artwork sí quedó escrito. %@", error.localizedDescription))
+            await progress(AirCardL10n.format("Could not complete full cache cleanup; artwork was written. %@", error.localizedDescription))
         }
 
-        await progress(AirCardL10n.text("Skin escrita. Cierra y abre Wallet en el iPhone."))
+        await progress(AirCardL10n.text("Skin written. Close and reopen Wallet on iPhone."))
         return FlashResult(cardHash: cardHash, artworkFiles: assets.count, cacheFiles: cacheFilesRemoved)
     }
 
@@ -190,16 +190,16 @@ struct WalletSkinService: Sendable {
     ) async throws -> ([String: Any], Data) {
         let cardHash = try validatedCardHash(rawHash)
         let path = "/var/mobile/Library/Passes/Cards/\(cardHash).pkpass/pass.json"
-        await progress(AirCardL10n.text("Leyendo pass.json de la tarjeta…"))
+        await progress(AirCardL10n.text("Reading card pass.json…"))
         let result = try await native(device: device, arguments: ["read-file", path])
         guard result["ok"] as? Bool == true,
               let encoded = result["dataBase64"] as? String,
               let data = Data(base64Encoded: encoded) else {
-            let message = result["error"] as? String ?? AirCardL10n.text("pass.json no está disponible a través de AFC.")
+            let message = result["error"] as? String ?? AirCardL10n.text("pass.json is not available through AFC.")
             throw AirCardError.processFailed(message)
         }
         guard var pass = try JSONSerialization.jsonObject(with: data) as? [String: Any] else {
-            throw AirCardError.processFailed(AirCardL10n.text("El pass.json de la tarjeta no contiene un objeto JSON válido."))
+            throw AirCardError.processFailed(AirCardL10n.text("Card pass.json does not contain a valid JSON object."))
         }
         // Force a mutable copy before callers update foregroundColor.
         pass = Dictionary(uniqueKeysWithValues: pass.map { ($0.key, $0.value) })
@@ -240,7 +240,7 @@ struct WalletSkinService: Sendable {
             return true
         }
 
-        await progress(AirCardL10n.text("El lote falló; escribiendo las teclas individualmente…"))
+        await progress(AirCardL10n.text("Batch failed; writing keys individually…"))
         for file in files {
             try Task.checkCancellation()
             guard try await writeBatch(
@@ -278,7 +278,7 @@ struct WalletSkinService: Sendable {
             }
 
             if attempt < 3 {
-                await progress(AirCardL10n.format("Reintentando la escritura %d/3…", attempt + 1))
+                await progress(AirCardL10n.format("Retrying write %d/3…", attempt + 1))
                 try await Task.sleep(for: .milliseconds(400 * attempt))
             }
         }
@@ -320,7 +320,7 @@ struct WalletSkinService: Sendable {
         )
         try books.write(to: booksURL, options: .atomic)
 
-        await progress(AirCardL10n.text("Preservando el estado de Books…"))
+        await progress(AirCardL10n.text("Preserving Books state…"))
         let snapshot = try await native(device: device, arguments: ["snapshot-books", snapshotURL.path])
         await progress(AirCardL10n.format("Books snapshot: %@", diagnostic(snapshot)))
         guard operationOK(snapshot) else { return false }
@@ -331,7 +331,7 @@ struct WalletSkinService: Sendable {
         await progress(AirCardL10n.format("Stage: %@", diagnostic(stage)))
         guard operationOK(stage) else { return false }
 
-        await progress(AirCardL10n.text("Enviando assets al iPhone…"))
+        await progress(AirCardL10n.text("Sending assets to iPhone…"))
         var atcArguments = [device.id]
         let destinations = [link] + files.map { "\(link)/\($0.0)" }
         for (identifier, destination) in Swift.zip(identifiers, destinations) {
@@ -340,7 +340,7 @@ struct WalletSkinService: Sendable {
         let atc = try await nativeAirTraffic(arguments: atcArguments)
         await progress(AirCardL10n.format("AirTraffic: %@", diagnostic(atc)))
 
-        await progress(AirCardL10n.text("Limpiando el área temporal y restaurando Books…"))
+        await progress(AirCardL10n.text("Cleaning temporary area and restoring Books…"))
         let finish = try await native(
             device: device,
             arguments: ["finish-write", source, link, recovered, snapshotURL.path]
@@ -360,7 +360,7 @@ struct WalletSkinService: Sendable {
     ) async throws -> Int {
         guard !leaves.isEmpty,
               leaves.allSatisfy({ !$0.isEmpty && !$0.contains("/") && $0 != "." && $0 != ".." }) else {
-            throw AirCardError.processFailed(AirCardL10n.text("Nombres de caché no seguros."))
+            throw AirCardError.processFailed(AirCardL10n.text("Unsafe cache names."))
         }
 
         var lastFailure: Error?
@@ -397,7 +397,7 @@ struct WalletSkinService: Sendable {
 
             let snapshot = try await native(device: device, arguments: ["snapshot-books", snapshotURL.path])
             guard operationOK(snapshot) else {
-                lastFailure = AirCardError.processFailed(AirCardL10n.text("No se pudo preservar Books antes de limpiar la caché."))
+                lastFailure = AirCardError.processFailed(AirCardL10n.text("Could not preserve Books before cleaning cache."))
                 if attempt < 3 { try await Task.sleep(for: .milliseconds(400 * attempt)) }
                 continue
             }
@@ -406,7 +406,7 @@ struct WalletSkinService: Sendable {
                 arguments: ["stage", source, link, recovered, archiveURL.path, booksURL.path, snapshotURL.path]
             )
             guard operationOK(stage) else {
-                lastFailure = AirCardError.processFailed(AirCardL10n.format("El helper no pudo preparar la limpieza de %@.", URL(fileURLWithPath: target).pathExtension))
+                lastFailure = AirCardError.processFailed(AirCardL10n.format("The helper could not prepare cleanup for %@.", URL(fileURLWithPath: target).pathExtension))
                 if attempt < 3 { try await Task.sleep(for: .milliseconds(400 * attempt)) }
                 continue
             }
@@ -423,7 +423,7 @@ struct WalletSkinService: Sendable {
                         device: device,
                         arguments: ["finish-write", source, link, recovered, snapshotURL.path]
                     )
-                    lastFailure = AirCardError.processFailed(AirCardL10n.text("AirTraffic no pudo mover los archivos de caché."))
+                    lastFailure = AirCardError.processFailed(AirCardL10n.text("AirTraffic could not move cache files."))
                     if attempt < 3 { try await Task.sleep(for: .milliseconds(400 * attempt)) }
                     continue
                 }
@@ -433,7 +433,7 @@ struct WalletSkinService: Sendable {
                     arguments: ["finish-moved-removal", source, link, recovered, snapshotURL.path, "\(leaves.count)"]
                 )
                 guard operationOK(finish) else {
-                    lastFailure = AirCardError.processFailed(AirCardL10n.text("No se completó la eliminación de caché o la restauración de Books."))
+                    lastFailure = AirCardError.processFailed(AirCardL10n.text("Cache deletion or Books restoration was not completed."))
                     if attempt < 3 { try await Task.sleep(for: .milliseconds(400 * attempt)) }
                     continue
                 }
@@ -448,13 +448,13 @@ struct WalletSkinService: Sendable {
                 if attempt < 3 { try await Task.sleep(for: .milliseconds(400 * attempt)) }
             }
         }
-        throw lastFailure ?? AirCardError.processFailed(AirCardL10n.text("No se pudo eliminar la caché de Wallet."))
+        throw lastFailure ?? AirCardError.processFailed(AirCardL10n.text("Could not delete Wallet cache."))
     }
 
     private func native(device: DeviceInfo, arguments: [String]) async throws -> [String: Any] {
         let helper = try NativeTools.helperURL(named: "device_helper")
         guard let command = arguments.first else {
-            throw AirCardError.invalidHelperOutput("comando nativo vacío")
+            throw AirCardError.invalidHelperOutput("empty native command")
         }
         let helperArguments = [command, device.id] + Array(arguments.dropFirst())
         let result = try await ProcessRunner.run(
@@ -466,7 +466,7 @@ struct WalletSkinService: Sendable {
             let stdout = result.stdoutString.trimmingCharacters(in: .whitespacesAndNewlines)
             let stderr = result.stderrString.trimmingCharacters(in: .whitespacesAndNewlines)
             throw AirCardError.invalidHelperOutput(
-                "status=\(result.status), stdout=\(stdout.isEmpty ? "<vacío>" : stdout), stderr=\(stderr.isEmpty ? "<vacío>" : stderr)"
+                "status=\(result.status), stdout=\(stdout.isEmpty ? "<empty>" : stdout), stderr=\(stderr.isEmpty ? "<empty>" : stderr)"
             )
         }
         return object
@@ -484,7 +484,7 @@ struct WalletSkinService: Sendable {
             let stdout = result.stdoutString.trimmingCharacters(in: .whitespacesAndNewlines)
             let stderr = result.stderrString.trimmingCharacters(in: .whitespacesAndNewlines)
             throw AirCardError.invalidHelperOutput(
-                "status=\(result.status), stdout=\(stdout.isEmpty ? "<vacío>" : stdout), stderr=\(stderr.isEmpty ? "<vacío>" : stderr)"
+                "status=\(result.status), stdout=\(stdout.isEmpty ? "<empty>" : stdout), stderr=\(stderr.isEmpty ? "<empty>" : stderr)"
             )
         }
         object["processExitCode"] = Int(result.status)

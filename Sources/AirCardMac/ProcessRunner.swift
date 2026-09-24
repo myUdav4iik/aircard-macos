@@ -64,7 +64,7 @@ enum ProcessRunner {
                     try process.run()
                 } catch {
                     throw AirCardError.processFailed(
-                        "No se pudo ejecutar \(executable.path): \(error.localizedDescription)"
+                        "Could not run \(executable.path): \(error.localizedDescription)"
                     )
                 }
 
@@ -73,7 +73,7 @@ enum ProcessRunner {
                     if ContinuousClock.now >= deadline {
                         controller.terminate()
                         throw AirCardError.processFailed(
-                            "El proceso \(executable.lastPathComponent) excedió el tiempo límite."
+                            "The process \(executable.lastPathComponent) exceeded the time limit."
                         )
                     }
                     try await Task.sleep(for: .milliseconds(100))

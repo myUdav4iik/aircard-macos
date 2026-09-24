@@ -30,16 +30,16 @@ struct RootView: View {
         .sheet(isPresented: $showManualEntry) {
             ManualCardSheet(model: model)
         }
-        .alert("Renombrar tarjeta", isPresented: Binding(
+        .alert("Rename Card", isPresented: Binding(
             get: { renaming != nil },
             set: { if !$0 { renaming = nil } }
         )) {
-            TextField("Nombre", text: $renameText)
-            Button("Guardar") {
+            TextField("Name", text: $renameText)
+            Button("Save") {
                 if let card = renaming { model.renameCard(card, to: renameText) }
                 renaming = nil
             }
-            Button("Cancelar", role: .cancel) { renaming = nil }
+            Button("Cancel", role: .cancel) { renaming = nil }
         }
     }
 
@@ -53,10 +53,10 @@ struct RootView: View {
                 DeviceRow(model: model)
             }
 
-            Section("Personalizar") {
-                Label("Estudio de tarjeta", systemImage: "paintpalette.fill")
+            Section("Customize") {
+                Label("Card Studio", systemImage: "paintpalette.fill")
                     .tag(SidebarItem.studio)
-                Label("Teclado de código", systemImage: "circle.grid.3x3.fill")
+                Label("Passcode Keyboard", systemImage: "circle.grid.3x3.fill")
                     .tag(SidebarItem.passcode)
             }
 
@@ -65,7 +65,7 @@ struct RootView: View {
                     ScanStatusRow(model: model)
                 }
                 if sortedCards.isEmpty && !model.isScanning {
-                    Text("Pulsa «Detectar desde Wallet» y abre la tarjeta en el iPhone.")
+                    Text("Press "Detect from Wallet" and open the card on your iPhone.")
                         .font(.caption)
                         .foregroundStyle(.secondary)
                 }
@@ -78,21 +78,21 @@ struct RootView: View {
                     )
                     .tag(SidebarItem.card(card.hash))
                     .contextMenu {
-                        Button("Usar como destino") { model.selectCard(card) }
-                        Button("Diseñar para esta tarjeta") {
+                        Button("Use as Target") { model.selectCard(card) }
+                        Button("Design for This Card") {
                             model.selectCard(card)
                             selection = .studio
                         }
-                        Button("Renombrar…") {
+                        Button("Rename…") {
                             renameText = card.name
                             renaming = card
                         }
-                        Button("Copiar hash") {
+                        Button("Copy Hash") {
                             NSPasteboard.general.clearContents()
                             NSPasteboard.general.setString(card.hash, forType: .string)
                         }
                         Divider()
-                        Button("Olvidar", role: .destructive) {
+                        Button("Forget", role: .destructive) {
                             if selection == .card(card.hash) { selection = .studio }
                             model.forgetCard(card)
                         }
@@ -100,7 +100,7 @@ struct RootView: View {
                 }
             } header: {
                 HStack {
-                    Text("Tarjetas")
+                    Text("Cards")
                     Spacer()
                     Button {
                         showManualEntry = true
@@ -108,12 +108,12 @@ struct RootView: View {
                         Image(systemName: "plus")
                     }
                     .buttonStyle(.borderless)
-                    .help("Pegar un hash manualmente")
+                    .help("Paste a hash manually")
                 }
             }
 
             Section {
-                Label("Actividad", systemImage: "list.bullet.rectangle.portrait")
+                Label("Activity", systemImage: "list.bullet.rectangle.portrait")
                     .tag(SidebarItem.activity)
             }
         }
@@ -124,7 +124,7 @@ struct RootView: View {
                     model.toggleScan()
                 } label: {
                     Label(
-                        model.isScanning ? "Detener detección" : "Detectar desde Wallet",
+                        model.isScanning ? "Stop Detection" : "Detect from Wallet",
                         systemImage: model.isScanning ? "stop.circle.fill" : "wave.3.right.circle.fill"
                     )
                     .frame(maxWidth: .infinity)
@@ -133,7 +133,7 @@ struct RootView: View {
                 .tint(model.isScanning ? .red : .accentColor)
                 .controlSize(.large)
                 .disabled(model.devices.isEmpty || model.isBusy)
-                Toggle("Seguir la última tarjeta que abra", isOn: $model.followLatestCard)
+                Toggle("Follow the last card I open", isOn: $model.followLatestCard)
                     .toggleStyle(.switch)
                     .controlSize(.mini)
                     .font(.caption)
@@ -182,7 +182,7 @@ private struct DeviceRow: View {
                     .pickerStyle(.menu)
                     .onChange(of: model.selectedDeviceID) { _, _ in model.recolorPasscodePreview() }
                 } else {
-                    Text(AirCardL10n.text(model.selectedDevice?.name ?? "Sin iPhone"))
+                    Text(AirCardL10n.text(model.selectedDevice?.name ?? "No iPhone"))
                         .fontWeight(.medium)
                         .lineLimit(1)
                 }
@@ -198,7 +198,7 @@ private struct DeviceRow: View {
                     }
                     .help(device.compatibilityNote)
                 } else {
-                    Text("Conéctalo por USB y pulsa «Confiar»")
+                    Text("Connect it via USB and tap "Trust"")
                         .font(.caption)
                         .foregroundStyle(.secondary)
                 }
@@ -210,7 +210,7 @@ private struct DeviceRow: View {
                 Image(systemName: "arrow.clockwise")
             }
             .buttonStyle(.borderless)
-            .help("Actualizar dispositivos")
+            .help("Refresh devices")
             .disabled(model.isBusy)
         }
         .padding(.vertical, 2)
@@ -224,12 +224,12 @@ private struct ScanStatusRow: View {
         HStack(alignment: .top, spacing: 8) {
             ProgressView().controlSize(.small)
             VStack(alignment: .leading, spacing: 2) {
-                Text("Escuchando el iPhone…")
+                Text("Listening to iPhone…")
                     .font(.callout.weight(.semibold))
-                Text("Abre Wallet y toca la tarjeta")
+                Text("Open Wallet and tap the card")
                     .font(.caption)
                     .foregroundStyle(.secondary)
-                Text(AirCardL10n.format("%d eventos · %d líneas", model.walletEventCount, model.scanLineCount))
+                Text(AirCardL10n.format("%d events · %d lines", model.walletEventCount, model.scanLineCount))
                     .font(.caption2.monospacedDigit())
                     .foregroundStyle(.tertiary)
             }
@@ -263,7 +263,7 @@ private struct CardSidebarRow: View {
             if isTarget {
                 Image(systemName: "checkmark.circle.fill")
                     .foregroundStyle(.tint)
-                    .help("Tarjeta destino")
+                    .help("Target card")
             }
         }
         .padding(.vertical, 2)
@@ -290,7 +290,7 @@ private struct StatusBar: View {
                 .truncationMode(.middle)
             Spacer()
             if model.isBusy {
-                Button("Cancelar") { model.cancel() }
+                Button("Cancel") { model.cancel() }
                     .controlSize(.small)
             }
         }
@@ -310,13 +310,13 @@ private struct ManualCardSheet: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 14) {
-            Text("Añadir tarjeta por hash")
+            Text("Add Card by Hash")
                 .font(.title3.weight(.semibold))
-            Text("Pega el identificador Base64 de la tarjeta (SHA-1 o SHA-256).")
+            Text("Paste the card Base64 identifier (SHA-1 or SHA-256).")
                 .font(.callout)
                 .foregroundStyle(.secondary)
             HStack {
-                TextField("Hash de la tarjeta", text: $hash)
+                TextField("Card hash", text: $hash)
                     .textFieldStyle(.roundedBorder)
                     .font(.system(.body, design: .monospaced))
                 if !hash.isEmpty {
@@ -326,9 +326,9 @@ private struct ManualCardSheet: View {
             }
             HStack {
                 Spacer()
-                Button("Cancelar", role: .cancel) { dismiss() }
+                Button("Cancel", role: .cancel) { dismiss() }
                     .keyboardShortcut(.cancelAction)
-                Button("Añadir") {
+                Button("Add") {
                     model.cardHash = hash
                     model.saveManualCard()
                     dismiss()

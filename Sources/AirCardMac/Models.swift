@@ -8,7 +8,7 @@ struct DeviceInfo: Identifiable, Hashable, Sendable {
     let build: String
 
     var summary: String {
-        let versionText = version.isEmpty ? AirCardL10n.text("iOS desconocido") : AirCardL10n.format("iOS %@", version)
+        let versionText = version.isEmpty ? AirCardL10n.text("Unknown iOS") : AirCardL10n.format("iOS %@", version)
         let buildText = build.isEmpty ? "" : " (\(build))"
         return AirCardL10n.format("%@ · %@ · %@%@", name, product, versionText, buildText)
     }
@@ -18,11 +18,11 @@ struct DeviceInfo: Identifiable, Hashable, Sendable {
     }
 
     var compatibilityNote: String {
-        guard let major = majorVersion else { return AirCardL10n.text("Versión de iOS desconocida") }
+        guard let major = majorVersion else { return AirCardL10n.text("Unknown iOS version") }
         switch major {
-        case 18: return AirCardL10n.format("iOS %@ · detección compatible (iOS 18)", version)
-        case 26...: return AirCardL10n.format("iOS %@ · detección compatible", version)
-        default: return AirCardL10n.format("iOS %@ · no probado; la detección puede fallar", version)
+        case 18: return AirCardL10n.format("iOS %@ · compatible detection (iOS 18)", version)
+        case 26...: return AirCardL10n.format("iOS %@ · compatible detection", version)
+        default: return AirCardL10n.format("iOS %@ · untested; detection may fail", version)
         }
     }
 
@@ -120,10 +120,10 @@ enum PasscodeLanguage: String, CaseIterable, Hashable, Identifiable, Sendable {
     var label: String {
         switch self {
         case .english: return AirCardL10n.text("English")
-        case .russian: return AirCardL10n.text("Russian (Русский)")
-        case .ukrainian: return AirCardL10n.text("Ukrainian (Українська)")
-        case .japanese: return AirCardL10n.text("Japanese (日本語)")
-        case .universal: return AirCardL10n.text("Universal (todos)")
+        case .russian: return AirCardL10n.text("Russian")
+        case .ukrainian: return AirCardL10n.text("Ukrainian")
+        case .japanese: return AirCardL10n.text("Japanese")
+        case .universal: return AirCardL10n.text("Universal (all)")
         }
     }
 }
@@ -201,21 +201,21 @@ enum AirCardError: LocalizedError {
     var errorDescription: String? {
         switch self {
         case .helperMissing:
-            return AirCardL10n.text("No encuentro los helpers nativos de macOS. Ejecuta Scripts/build_helpers.sh.")
+            return AirCardL10n.text("Cannot find native macOS helpers. Run Scripts/build_helpers.sh.")
         case .invalidHelperOutput(let output):
-            return AirCardL10n.format("El helper devolvió una respuesta inválida: %@", output)
+            return AirCardL10n.format("The helper returned an invalid response: %@", output)
         case .noDevice:
-            return AirCardL10n.text("No hay un iPhone emparejado y conectado. Desbloquéalo y pulsa ‘Confiar’.")
+            return AirCardL10n.text("There is no paired and connected iPhone. Unlock it and tap "Trust".")
         case .invalidCardHash:
-            return AirCardL10n.text("El hash de la tarjeta no parece un identificador Base64 válido.")
+            return AirCardL10n.text("The card hash does not look like a valid Base64 identifier.")
         case .invalidTarget(let target):
-            return AirCardL10n.format("Ruta de destino no permitida: %@", target)
+            return AirCardL10n.format("Destination path is not allowed: %@", target)
         case .processFailed(let message):
             return message
         case .airTrafficUnavailable:
-            return AirCardL10n.text("Desbloquea el iPhone, mantén la pantalla encendida y abre Apple Books una vez.")
+            return AirCardL10n.text("Unlock the iPhone, keep the screen on, and open Apple Books once.")
         case .cancelled:
-            return AirCardL10n.text("Operación cancelada.")
+            return AirCardL10n.text("Operation cancelled.")
         }
     }
 }

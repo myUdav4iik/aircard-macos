@@ -30,19 +30,19 @@ struct CardDetailView: View {
                     renameText = card.name
                     isRenaming = true
                 } label: {
-                    Label("Renombrar", systemImage: "pencil")
+                    Label("Rename", systemImage: "pencil")
                 }
                 Button {
                     NSPasteboard.general.clearContents()
                     NSPasteboard.general.setString(card.hash, forType: .string)
-                    model.status = AirCardL10n.text("Hash copiado.")
+                    model.status = AirCardL10n.text("Hash copied.")
                 } label: {
-                    Label("Copiar hash", systemImage: "doc.on.doc")
+                    Label("Copy Hash", systemImage: "doc.on.doc")
                 }
                 Button {
                     openStudio()
                 } label: {
-                    Label("Diseñar", systemImage: "paintpalette")
+                    Label("Design", systemImage: "paintpalette")
                         .labelStyle(.titleAndIcon)
                 }
                 .buttonStyle(.borderedProminent)
@@ -51,23 +51,23 @@ struct CardDetailView: View {
         .onAppear(perform: reload)
         .onChange(of: card.hash) { _, _ in reload() }
         .onChange(of: model.historyRevision) { _, _ in reload() }
-        .alert("Renombrar tarjeta", isPresented: $isRenaming) {
-            TextField("Nombre", text: $renameText)
-            Button("Guardar") { model.renameCard(card, to: renameText) }
-            Button("Cancelar", role: .cancel) {}
+        .alert("Rename Card", isPresented: $isRenaming) {
+            TextField("Name", text: $renameText)
+            Button("Save") { model.renameCard(card, to: renameText) }
+            Button("Cancel", role: .cancel) {}
         }
         .confirmationDialog(
-            "Cambiar el color de los números",
+            "Change Number Color",
             isPresented: $showColorWarning,
             titleVisibility: .visible
         ) {
-            Button("Aplicar color") {
+            Button("Apply Color") {
                 model.selectCard(card)
                 model.flashCardTextColor()
             }
-            Button("Cancelar", role: .cancel) {}
+            Button("Cancel", role: .cancel) {}
         } message: {
-            Text("Se intentará cambiar foregroundColor en pass.json. iOS puede rechazarlo o ignorarlo.")
+            Text("The app will try to change foregroundColor in pass.json. iOS may reject or ignore it.")
         }
     }
 
@@ -90,7 +90,7 @@ struct CardDetailView: View {
                 .foregroundStyle(.secondary)
                 Label(
                     AirCardL10n.format(
-                        "Vista %d veces · última %@",
+                        "Viewed %d times · last %@",
                         card.hits,
                         card.lastSeen.formatted(.relative(presentation: .named).locale(AirCardL10n.locale))
                     ),
@@ -98,7 +98,7 @@ struct CardDetailView: View {
                 )
                     .foregroundStyle(.secondary)
                 if model.selectedCard?.hash == card.hash {
-                    Label("Tarjeta destino de «Aplicar»", systemImage: "checkmark.seal.fill")
+                    Label("Target card for "Apply"", systemImage: "checkmark.seal.fill")
                         .foregroundStyle(.green)
                 }
                 if let latest = entries.first {
@@ -106,14 +106,14 @@ struct CardDetailView: View {
                         Button {
                             model.exportBackup(latest, card: card)
                         } label: {
-                            Label("Guardar respaldo…", systemImage: "externaldrive.badge.plus")
+                            Label("Save Backup…", systemImage: "externaldrive.badge.plus")
                         }
                         .controlSize(.large)
                         Button {
                             model.openInStudio(latest)
                             openStudio()
                         } label: {
-                            Label("Abrir en el estudio", systemImage: "paintpalette")
+                            Label("Open in Studio", systemImage: "paintpalette")
                         }
                         .controlSize(.large)
                     }
@@ -127,10 +127,10 @@ struct CardDetailView: View {
     @ViewBuilder
     private var historySection: some View {
         VStack(alignment: .leading, spacing: 12) {
-            Text("Historial de skins aplicados")
+            Text("Applied Skin History")
                 .font(.title3.weight(.semibold))
             if entries.isEmpty {
-                Text(AirCardL10n.format("Aún no has aplicado un diseño a esta tarjeta desde AirCard. Cada vez que lo hagas se guardará aquí una copia con la miniatura, los 11 archivos y el .%@.", SkinDocument.fileExtension))
+                Text(AirCardL10n.format("You have not applied a design to this card from AirCard yet. Each time you do, a copy with thumbnail, 11 files, and the .%@ file will be saved here.", SkinDocument.fileExtension))
                     .foregroundStyle(.secondary)
             } else {
                 LazyVGrid(columns: [GridItem(.adaptive(minimum: 200), spacing: 16)], spacing: 16) {
@@ -149,7 +149,7 @@ struct CardDetailView: View {
 
     private var limitsNote: some View {
         Label {
-            Text("AirCard no puede leer el diseño original de Apple o del banco desde el iPhone; el respaldo contiene solo lo que aplicaste con la app. Para volver al original, quita la tarjeta de Wallet y vuelve a añadirla.")
+            Text("AirCard cannot read the original Apple or bank design from the iPhone; backups contain only what you applied with the app. To return to the original, remove the card from Wallet and add it again.")
         } icon: {
             Image(systemName: "info.circle")
         }
@@ -160,9 +160,9 @@ struct CardDetailView: View {
     }
 
     private var cardTextColorSection: some View {
-        GroupBox("Texto de los números") {
+        GroupBox("Number Text") {
             VStack(alignment: .leading, spacing: 12) {
-                Text("Control experimental del color del texto de esta tarjeta. No usa archivos .passthm ni modifica el diseño de fondo.")
+                Text("Experimental text-color control for this card. It does not use .passthm files or modify the background design.")
                     .font(.callout)
                     .foregroundStyle(.secondary)
                     .fixedSize(horizontal: false, vertical: true)
@@ -200,12 +200,12 @@ struct CardDetailView: View {
     }
 
     private var colorPicker: some View {
-        ColorPicker("Color del texto", selection: $model.cardTextColor, supportsOpacity: false)
+        ColorPicker("Text Color", selection: $model.cardTextColor, supportsOpacity: false)
             .frame(maxWidth: 260, alignment: .leading)
     }
 
     private var readColorButton: some View {
-        Button("Leer color") {
+        Button("Read Color") {
             model.selectCard(card)
             model.readCardTextColor()
         }
@@ -213,7 +213,7 @@ struct CardDetailView: View {
     }
 
     private var applyColorButton: some View {
-        Button("Intentar cambio de color") {
+        Button("Try Color Change") {
             model.selectCard(card)
             showColorWarning = true
         }
@@ -222,11 +222,11 @@ struct CardDetailView: View {
     }
 
     private var clearCacheButton: some View {
-        Button("Regenerar caché") {
+        Button("Regenerate Cache") {
             model.selectCard(card)
             model.clearWalletCardCache()
         }
-        .help("Elimina los renders guardados de esta tarjeta para que Wallet los genere otra vez.")
+        .help("Removes cached renders for this card so Wallet generates them again.")
         .disabled(model.isBusy || model.selectedDevice == nil)
     }
 }
@@ -242,15 +242,15 @@ private struct HistoryTile: View {
             Text(entry.date.formatted(date: .abbreviated, time: .shortened))
                 .font(.caption.weight(.medium))
             HStack {
-                Button("Abrir", action: open)
-                Button("Respaldo…", action: backup)
+                Button("Open", action: open)
+                Button("Backup…", action: backup)
             }
             .controlSize(.small)
         }
         .contextMenu {
-            Button("Abrir en el estudio", action: open)
-            Button("Guardar respaldo…", action: backup)
-            Button("Mostrar en Finder") { NSWorkspace.shared.activateFileViewerSelecting([entry.url]) }
+            Button("Open in Studio", action: open)
+            Button("Save Backup…", action: backup)
+            Button("Show in Finder") { NSWorkspace.shared.activateFileViewerSelecting([entry.url]) }
         }
     }
 }
@@ -276,20 +276,20 @@ struct ActivityView: View {
                 proxy.scrollTo(count - 1, anchor: .bottom)
             }
         }
-        .navigationTitle("Actividad")
+        .navigationTitle("Activity")
         .toolbar {
             ToolbarItem {
                 Button {
                     NSPasteboard.general.clearContents()
                     NSPasteboard.general.setString(model.logs.joined(separator: "\n"), forType: .string)
                 } label: {
-                    Label("Copiar registro", systemImage: "doc.on.doc")
+                    Label("Copy Log", systemImage: "doc.on.doc")
                 }
             }
         }
         .overlay {
             if model.logs.isEmpty {
-                ContentUnavailableView("Sin actividad", systemImage: "list.bullet.rectangle", description: Text("Aquí verás lo que hace la app con el iPhone."))
+                ContentUnavailableView("No Activity", systemImage: "list.bullet.rectangle", description: Text("You will see what the app does with the iPhone here."))
             }
         }
     }
