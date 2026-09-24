@@ -10,21 +10,21 @@ struct PasscodeView: View {
             settings
                 .frame(minWidth: 360, idealWidth: 420, maxWidth: 520)
         }
-        .navigationTitle("Teclado de código")
+        .navigationTitle("Passcode Keyboard")
         .navigationSubtitle(model.passcodeThemeName)
         .toolbar {
             ToolbarItemGroup(placement: .primaryAction) {
                 Button { model.choosePasscodeTheme() } label: {
-                    Label("Elegir .passthm…", systemImage: "square.and.arrow.down")
+                    Label("Choose .passthm…", systemImage: "square.and.arrow.down")
                 }
                 Button { model.exportPasscodeTheme() } label: {
-                    Label("Descargar .passthm…", systemImage: "arrow.down.doc")
+                    Label("Download .passthm…", systemImage: "arrow.down.doc")
                 }
                 .disabled(model.isBusy || model.passcodeTheme == nil)
                 Button {
                     model.isBusy ? model.cancel() : model.flashPasscodeTheme()
                 } label: {
-                    Label(model.isBusy ? "Cancelar" : "Aplicar", systemImage: model.isBusy ? "xmark.circle" : "iphone.and.arrow.forward")
+                    Label(model.isBusy ? "Cancel" : "Apply", systemImage: model.isBusy ? "xmark.circle" : "iphone.and.arrow.forward")
                         .labelStyle(.titleAndIcon)
                 }
                 .buttonStyle(.borderedProminent)
@@ -44,16 +44,16 @@ struct PasscodeView: View {
             )
             if model.passcodeKeyTiles.isEmpty {
                 ContentUnavailableView {
-                    Label("Sin tema", systemImage: "circle.grid.3x3")
+                    Label("No Theme", systemImage: "circle.grid.3x3")
                 } description: {
-                    Text("Elige un archivo .passthm para previsualizar el teclado.")
+                    Text("Choose a .passthm file to preview the keyboard.")
                 } actions: {
-                    Button("Elegir .passthm…") { model.choosePasscodeTheme() }
+                    Button("Choose .passthm…") { model.choosePasscodeTheme() }
                 }
                 .foregroundStyle(model.passcodeVariant == .white ? .white : .black)
             } else {
                 VStack(spacing: 18) {
-                    Text("Introduce el código")
+                    Text("Enter Passcode")
                         .font(.title3)
                         .foregroundStyle(model.passcodeVariant == .white ? .white : .black)
                     Grid(horizontalSpacing: 22, verticalSpacing: 16) {
@@ -85,31 +85,31 @@ struct PasscodeView: View {
         }
         .frame(width: 72, height: 72)
         .help(tile.image == nil
-            ? AirCardL10n.format("El tema no trae la tecla %@", tile.key)
-            : AirCardL10n.format("Tecla %@", tile.key))
+            ? AirCardL10n.format("The theme does not include key %@", tile.key)
+            : AirCardL10n.format("Key %@", tile.key))
     }
 
     private var settings: some View {
         Form {
-            Section("Estilo") {
-                Picker("Variante", selection: $model.passcodeVariant) {
+            Section("Style") {
+                Picker("Variant", selection: $model.passcodeVariant) {
                     ForEach(PasscodeVariant.allCases) { variant in
                         Text(variant.label).tag(variant)
                     }
                 }
                 .pickerStyle(.segmented)
                 .onChange(of: model.passcodeVariant) { _, _ in model.recolorPasscodePreview() }
-                Toggle("Texto en negrita", isOn: $model.passcodeBold)
+                Toggle("Bold Text", isOn: $model.passcodeBold)
                     .onChange(of: model.passcodeBold) { _, _ in model.recolorPasscodePreview() }
             }
             Section {
-                Picker("Idioma del teclado", selection: $model.passcodeLanguage) {
+                Picker("Keyboard Language", selection: $model.passcodeLanguage) {
                     ForEach(PasscodeLanguage.allCases) { language in
                         Text(language.label).tag(language)
                     }
                 }
                 .onChange(of: model.passcodeLanguage) { _, _ in model.recolorPasscodePreview() }
-                Picker("Caché", selection: $model.passcodeTargetVersion) {
+                Picker("Cache", selection: $model.passcodeTargetVersion) {
                     Text(model.passcodeAutoCacheLabel).tag(PasscodeCache.auto)
                     ForEach(PasscodeCache.versions, id: \.self) { version in
                         Text(version).tag(version)
@@ -119,10 +119,10 @@ struct PasscodeView: View {
             } header: {
                 Text("iPhone")
             } footer: {
-                Text("Usa el idioma del teclado del iPhone. Auto elige la caché según la versión de iOS: 18+ → 10, 16–17 → 9, anteriores → 8.")
+                Text("Use the iPhone keyboard language. Auto selects cache by iOS version: 18+ → 10, 16–17 → 9, earlier → 8.")
             }
             if !model.passcodePlannedFiles.isEmpty {
-                Section(AirCardL10n.format("%d archivos en %@", model.passcodePlannedFiles.count, model.passcodeResolvedCache)) {
+                Section(AirCardL10n.format("%d files in %@", model.passcodePlannedFiles.count, model.passcodeResolvedCache)) {
                     ScrollView {
                         Text(model.passcodePlannedFiles.joined(separator: "\n"))
                             .font(.system(.caption, design: .monospaced))
@@ -133,7 +133,7 @@ struct PasscodeView: View {
                 }
             }
             Section {
-                Label("Después de aplicar, bloquea el iPhone para que TelephonyUI recargue la caché.", systemImage: "lock.iphone")
+                Label("After applying, lock the iPhone so TelephonyUI reloads the cache.", systemImage: "lock.iphone")
                     .font(.callout)
                     .foregroundStyle(.secondary)
             }

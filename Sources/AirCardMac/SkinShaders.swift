@@ -22,7 +22,7 @@ final class SkinGeneratorKernel: CIImageProcessorKernel {
               let texture = output.metalTexture,
               var params = arguments?["params"] as? [Float],
               var colors = arguments?["colors"] as? [Float] else {
-            throw AirCardError.processFailed(AirCardL10n.text("El generador de efectos no recibió un contexto Metal."))
+            throw AirCardError.processFailed(AirCardL10n.text("The effects generator did not receive a Metal context."))
         }
         let pipeline = try pipeline(for: commandBuffer.device)
         params[3] = Float(output.region.minX)
@@ -32,7 +32,7 @@ final class SkinGeneratorKernel: CIImageProcessorKernel {
         if colors.count < 64 { colors += Array(repeating: 0, count: 64 - colors.count) }
 
         guard let encoder = commandBuffer.makeComputeCommandEncoder() else {
-            throw AirCardError.processFailed(AirCardL10n.text("No pude crear el encoder Metal."))
+            throw AirCardError.processFailed(AirCardL10n.text("Could not create Metal encoder."))
         }
         encoder.setComputePipelineState(pipeline)
         encoder.setTexture(texture, index: 0)
@@ -56,7 +56,7 @@ final class SkinGeneratorKernel: CIImageProcessorKernel {
         if let cached = pipelines[key] { return cached }
         let library = try device.makeLibrary(source: SkinShaderSource.metal, options: nil)
         guard let function = library.makeFunction(name: "skin_generate") else {
-            throw AirCardError.processFailed(AirCardL10n.text("No encontré el shader skin_generate."))
+            throw AirCardError.processFailed(AirCardL10n.text("Could not find skin_generate shader."))
         }
         let pipeline = try device.makeComputePipelineState(function: function)
         pipelines[key] = pipeline

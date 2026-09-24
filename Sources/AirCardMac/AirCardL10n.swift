@@ -10,10 +10,10 @@ enum AirCardL10n {
     }
 
     static func cardName(_ name: String) -> String {
-        let prefix = "Tarjeta "
-        guard name.hasPrefix(prefix),
+        let prefixes = ["Card ", "Tarjeta "]
+        guard let prefix = prefixes.first(where: { name.hasPrefix($0) }),
               let number = Int(name.dropFirst(prefix.count)) else { return name }
-        return format("Tarjeta %d", number)
+        return format("Card %d", number)
     }
 
     static func format(_ key: String, _ arguments: CVarArg...) -> String {

@@ -18,7 +18,7 @@ final class AppModel: ObservableObject {
     @Published var cardThumbnails: [String: NSImage] = [:]
     @Published var historyRevision = 0
     @Published var cardTextColor = Color.white
-    @Published var cardTextColorStatus = AirCardL10n.text("Todavía no he leído el pass.json.")
+    @Published var cardTextColorStatus = AirCardL10n.text("I have not read pass.json yet.")
     @Published var passcodeTheme: PasscodeTheme?
     @Published var passcodePreview: NSImage?
     @Published var passcodeKeyTiles: [PasscodeKeyTile] = []
@@ -28,7 +28,7 @@ final class AppModel: ObservableObject {
     @Published var passcodeLanguage = PasscodeLanguage.english
     @Published var passcodeBold = false
     @Published var passcodeTargetVersion = PasscodeCache.auto
-    @Published var status = AirCardL10n.text("Listo. Conecta y desbloquea el iPhone.")
+    @Published var status = AirCardL10n.text("Ready. Connect and unlock the iPhone.")
     @Published var logs: [String] = []
     @Published var isBusy = false
     @Published var isScanning = false
@@ -61,7 +61,7 @@ final class AppModel: ObservableObject {
 
     var targetCardLabel: String {
         if let card = selectedCard { return AirCardL10n.cardName(card.name) }
-        return AirCardL10n.text(isCardHashValid ? "tarjeta manual" : "sin tarjeta")
+        return AirCardL10n.text(isCardHashValid ? "manual card" : "no card")
     }
 
     init() {
@@ -94,7 +94,7 @@ final class AppModel: ObservableObject {
         panel.canChooseDirectories = true
         panel.canChooseFiles = false
         panel.canCreateDirectories = true
-        panel.prompt = AirCardL10n.text("Guardar respaldo aquí")
+        panel.prompt = AirCardL10n.text("Save backup here")
         guard panel.runModal() == .OK, let directory = panel.url else { return }
         let destination = directory.appendingPathComponent(
             "\(card.name)-\(entry.url.lastPathComponent)",
@@ -105,12 +105,12 @@ final class AppModel: ObservableObject {
                 try FileManager.default.removeItem(at: destination)
             }
             try FileManager.default.copyItem(at: entry.url, to: destination)
-            status = AirCardL10n.format("Respaldo guardado: %@.", destination.lastPathComponent)
-            log(AirCardL10n.format("Respaldo de %@ guardado en %@", AirCardL10n.cardName(card.name), destination.path))
+            status = AirCardL10n.format("Backup saved: %@.", destination.lastPathComponent)
+            log(AirCardL10n.format("Backup of %@ saved to %@", AirCardL10n.cardName(card.name), destination.path))
             NSWorkspace.shared.activateFileViewerSelecting([destination])
         } catch {
             status = error.localizedDescription
-            log(AirCardL10n.format("No pude guardar el respaldo: %@", error.localizedDescription))
+            log(AirCardL10n.format("Could not save backup: %@", error.localizedDescription))
         }
     }
 
@@ -128,7 +128,7 @@ final class AppModel: ObservableObject {
                 NSWorkspace.shared.activateFileViewerSelecting([folder])
             } catch {
                 status = error.localizedDescription
-                log(AirCardL10n.format("No pude exportar los assets: %@", error.localizedDescription))
+                log(AirCardL10n.format("Could not export assets: %@", error.localizedDescription))
             }
         }
     }
@@ -137,7 +137,7 @@ final class AppModel: ObservableObject {
         scanTask?.cancel()
         isScanning = false
         currentTask?.cancel()
-        status = AirCardL10n.text("Buscando iPhone emparejados…")
+        status = AirCardL10n.text("Searching for paired iPhones…")
         currentTask = Task { [weak self] in
             do {
                 let devices = try await WalletSkinService().listDevices()
@@ -147,14 +147,14 @@ final class AppModel: ObservableObject {
                     self?.selectedDeviceID = devices.first?.id ?? ""
                 }
                 self?.status = devices.isEmpty
-                    ? AirCardL10n.text("No encontré un iPhone. Conéctalo por USB y pulsa ‘Confiar’.")
-                    : AirCardL10n.format("Encontré %d iPhone(s).", devices.count)
+                    ? AirCardL10n.text("No iPhone found. Connect it via USB and tap "Trust".")
+                    : AirCardL10n.format("Found %d iPhone(s).", devices.count)
                 self?.log(devices.isEmpty
                     ? AirCardL10n.text("No hay dispositivos disponibles.")
                     : AirCardL10n.format("Dispositivos: %@", devices.map(\.name).joined(separator: ", ")))
             } catch {
                 self?.status = error.localizedDescription
-                self?.log(AirCardL10n.format("Error de detección: %@", error.localizedDescription))
+                self?.log(AirCardL10n.format("Detection error: %@", error.localizedDescription))
             }
         }
     }
@@ -167,7 +167,7 @@ final class AppModel: ObservableObject {
         guard panel.runModal() == .OK, let url = panel.url else { return }
 
         isBusy = true
-        status = AirCardL10n.text("Abriendo el tema del teclado…")
+        status = AirCardL10n.text("Opening keyboard theme…")
         currentTask?.cancel()
         let tint = passcodeVariant.tint
         let selection = passcodeTargetVersion
@@ -191,13 +191,13 @@ final class AppModel: ObservableObject {
                 }
                 self?.passcodePreview = NSImage(data: previewData)
                 self?.recolorPasscodePreview()
-                self?.status = AirCardL10n.format("Tema listo: %@. Elige --white o --black y aplícalo.", loaded.name)
-                self?.log(AirCardL10n.format("Tema de teclado preparado: %@ [%@]", loaded.name, loaded.detectedVersion))
+                self?.status = AirCardL10n.format("Theme ready: %@. Choose --white or --black and apply it.", loaded.name)
+                self?.log(AirCardL10n.format("Keyboard theme prepared: %@ [%@]", loaded.name, loaded.detectedVersion))
             } catch is CancellationError {
-                self?.status = AirCardL10n.text("Operación cancelada.")
+                self?.status = AirCardL10n.text("Operation cancelled.")
             } catch {
                 self?.status = error.localizedDescription
-                self?.log(AirCardL10n.format("No pude abrir el tema del teclado: %@", error.localizedDescription))
+                self?.log(AirCardL10n.format("Could not open keyboard theme: %@", error.localizedDescription))
             }
             self?.isBusy = false
         }
@@ -234,14 +234,14 @@ final class AppModel: ObservableObject {
                     PasscodeKeyTile(key: key, image: images[key].flatMap { NSImage(data: $0) })
                 }
             } catch {
-                self?.log(AirCardL10n.format("No pude actualizar la previsualización: %@", error.localizedDescription))
+                self?.log(AirCardL10n.format("Could not update preview: %@", error.localizedDescription))
             }
         }
     }
 
     func exportPasscodeTheme() {
         guard let theme = passcodeTheme else {
-            status = AirCardL10n.text("Selecciona un tema .passthm primero.")
+            status = AirCardL10n.text("Select a .passthm theme first.")
             return
         }
         let tint = passcodeVariant.tint
@@ -257,7 +257,7 @@ final class AppModel: ObservableObject {
 
         currentTask?.cancel()
         isBusy = true
-        status = AirCardL10n.text("Exportando el teclado recoloreado…")
+        status = AirCardL10n.text("Exporting recolored keyboard…")
         currentTask = Task { [weak self] in
             do {
                 let service = PasscodeThemeService()
@@ -270,14 +270,14 @@ final class AppModel: ObservableObject {
                     targetVersion: target
                 )
                 try await service.export(files: files, targetVersion: target, to: url)
-                self?.status = AirCardL10n.format("Tema exportado: %@ (%d archivos).", url.lastPathComponent, files.count)
-                self?.log(AirCardL10n.format("Teclado exportado en %@ [%@]", url.path, target))
+                self?.status = AirCardL10n.format("Theme exported: %@ (%d files).", url.lastPathComponent, files.count)
+                self?.log(AirCardL10n.format("Keyboard exported at %@ [%@]", url.path, target))
                 NSWorkspace.shared.activateFileViewerSelecting([url])
             } catch is CancellationError {
-                self?.status = AirCardL10n.text("Operación cancelada.")
+                self?.status = AirCardL10n.text("Operation cancelled.")
             } catch {
                 self?.status = error.localizedDescription
-                self?.log(AirCardL10n.format("No pude exportar el teclado: %@", error.localizedDescription))
+                self?.log(AirCardL10n.format("Could not export keyboard: %@", error.localizedDescription))
             }
             self?.isBusy = false
         }
@@ -293,22 +293,22 @@ final class AppModel: ObservableObject {
 
     func flashPasscodeTheme() {
         guard let device = devices.first(where: { $0.id == selectedDeviceID }) else {
-            status = AirCardL10n.text("Selecciona un iPhone conectado.")
+            status = AirCardL10n.text("Select a connected iPhone.")
             return
         }
         guard let theme = passcodeTheme else {
-            status = AirCardL10n.text("Selecciona un tema .passthm primero.")
+            status = AirCardL10n.text("Select a .passthm theme first.")
             return
         }
 
         currentTask?.cancel()
         isBusy = true
-        status = AirCardL10n.format("Escribiendo color del teclado en %@…", device.name)
+        status = AirCardL10n.format("Writing keyboard color to %@…", device.name)
         let scanToStop = scanTask
         if let scanToStop {
             scanToStop.cancel()
             isScanning = false
-            log(AirCardL10n.text("Escaneo detenido; esperando el cierre del helper nativo…"))
+            log(AirCardL10n.text("Scan stopped; waiting for native helper to close…"))
         }
         let tint = passcodeVariant.tint
         let variant = passcodeVariant
@@ -322,7 +322,7 @@ final class AppModel: ObservableObject {
                     try Task.checkCancellation()
                     try await Task.sleep(for: .milliseconds(300))
                 }
-                self?.log(AirCardL10n.format("Inicio de color de teclado para %@ en %@.", device.name, target))
+                self?.log(AirCardL10n.format("Keyboard color start for %@ in %@.", device.name, target))
                 let result = try await PasscodeThemeService().flash(
                     theme: theme,
                     device: device,
@@ -338,13 +338,13 @@ final class AppModel: ObservableObject {
                     }
                 }
                 guard !Task.isCancelled else { return }
-                self?.status = AirCardL10n.text("Color aplicado. Bloquea el iPhone para ver el teclado.")
+                self?.status = AirCardL10n.text("Color applied. Lock the iPhone to see the keyboard.")
                 self?.log(AirCardL10n.format("Completado: %d assets en %@.", result.assetCount, result.targetVersion))
             } catch is CancellationError {
-                self?.status = AirCardL10n.text("Operación cancelada.")
+                self?.status = AirCardL10n.text("Operation cancelled.")
             } catch {
                 self?.status = error.localizedDescription
-                self?.log(AirCardL10n.format("Color de teclado fallido: %@", error.localizedDescription))
+                self?.log(AirCardL10n.format("Keyboard color failed: %@", error.localizedDescription))
             }
             self?.isBusy = false
         }
@@ -352,40 +352,40 @@ final class AppModel: ObservableObject {
 
     func flashSkin() {
         guard let device = devices.first(where: { $0.id == selectedDeviceID }) else {
-            status = AirCardL10n.text("Selecciona un iPhone conectado.")
+            status = AirCardL10n.text("Select a connected iPhone.")
             return
         }
         guard studio.document.hasVisibleContent else {
-            status = AirCardL10n.text("El diseño no tiene capas visibles.")
+            status = AirCardL10n.text("The design has no visible layers.")
             return
         }
         guard service.validateCardHash(cardHash) != nil else {
-            status = AirCardL10n.text("Introduce un hash de tarjeta válido.")
+            status = AirCardL10n.text("Enter a valid card hash.")
             return
         }
 
         currentTask?.cancel()
         isBusy = true
-        status = AirCardL10n.format("Escribiendo skin en %@…", device.name)
+        status = AirCardL10n.format("Writing skin to %@…", device.name)
         let scanToStop = scanTask
         if let scanToStop {
             scanToStop.cancel()
             isScanning = false
-            log(AirCardL10n.text("Escaneo detenido; esperando el cierre del helper nativo…"))
+            log(AirCardL10n.text("Scan stopped; waiting for native helper to close…"))
         }
         let rawCardHash = cardHash
         let document = studio.document
         let studio = studio
         currentTask = Task { [weak self] in
             do {
-                self?.status = AirCardL10n.text("Renderizando el diseño a 1536 × 969…")
+                self?.status = AirCardL10n.text("Rendering design to 1536 × 969…")
                 let artwork = try await studio.renderArtwork()
                 if let scanToStop {
                     await scanToStop.value
                     try Task.checkCancellation()
                     try await Task.sleep(for: .milliseconds(300))
                 }
-                self?.log(AirCardL10n.format("Inicio de flash para %@.", device.name))
+                self?.log(AirCardL10n.format("Flash started for %@.", device.name))
                 let result = try await WalletSkinService().flash(
                     device: device,
                     cardHash: rawCardHash,
@@ -403,12 +403,12 @@ final class AppModel: ObservableObject {
                     }.value
                     self?.reloadThumbnails()
                 } catch {
-                    self?.log(AirCardL10n.format("No pude guardar el historial local: %@", error.localizedDescription))
+                    self?.log(AirCardL10n.format("Could not save local history: %@", error.localizedDescription))
                 }
-                self?.status = AirCardL10n.format("Skin aplicada a %@. Cierra y abre Wallet en el iPhone.", result.cardHash)
-                self?.log(AirCardL10n.format("Completado: %d assets; %d cachés tocadas.", result.artworkFiles, result.cacheFiles))
+                self?.status = AirCardL10n.format("Skin applied to %@. Close and reopen Wallet on iPhone.", result.cardHash)
+                self?.log(AirCardL10n.format("Done: %d assets; %d caches touched.", result.artworkFiles, result.cacheFiles))
             } catch is CancellationError {
-                self?.status = AirCardL10n.text("Operación cancelada.")
+                self?.status = AirCardL10n.text("Operation cancelled.")
             } catch {
                 self?.status = error.localizedDescription
                 self?.log(AirCardL10n.format("Flash fallido: %@", error.localizedDescription))
@@ -419,23 +419,23 @@ final class AppModel: ObservableObject {
 
     func readCardTextColor() {
         guard let device = devices.first(where: { $0.id == selectedDeviceID }) else {
-            status = AirCardL10n.text("Selecciona un iPhone conectado.")
+            status = AirCardL10n.text("Select a connected iPhone.")
             return
         }
         guard service.validateCardHash(cardHash) != nil else {
-            status = AirCardL10n.text("Introduce o detecta el hash de la tarjeta primero.")
+            status = AirCardL10n.text("Enter or detect the card hash first.")
             return
         }
 
         currentTask?.cancel()
         isBusy = true
-        status = AirCardL10n.text("Leyendo el color de los números…")
+        status = AirCardL10n.text("Reading number text color…")
         let rawCardHash = cardHash
         let scanToStop = scanTask
         if let scanToStop {
             scanToStop.cancel()
             isScanning = false
-            log(AirCardL10n.text("Escaneo detenido antes de leer pass.json…"))
+            log(AirCardL10n.text("Scan stopped before reading pass.json…"))
         }
         currentTask = Task { [weak self] in
             do {
@@ -457,14 +457,14 @@ final class AppModel: ObservableObject {
                 let foreground = metadata.foregroundColor ?? AirCardL10n.text("no definido")
                 let label = metadata.labelColor ?? AirCardL10n.text("no definido")
                 self?.cardTextColorStatus = AirCardL10n.format("foregroundColor: %@ · labelColor: %@", foreground, label)
-                self?.status = AirCardL10n.text("Color actual leído.")
-                self?.log(AirCardL10n.format("pass.json leído: foregroundColor=%@, labelColor=%@.", foreground, label))
+                self?.status = AirCardL10n.text("Current color read.")
+                self?.log(AirCardL10n.format("pass.json read: foregroundColor=%@, labelColor=%@.", foreground, label))
             } catch is CancellationError {
-                self?.status = AirCardL10n.text("Operación cancelada.")
+                self?.status = AirCardL10n.text("Operation cancelled.")
             } catch {
                 self?.cardTextColorStatus = error.localizedDescription
                 self?.status = error.localizedDescription
-                self?.log(AirCardL10n.format("No pude leer el color de los números: %@", error.localizedDescription))
+                self?.log(AirCardL10n.format("Could not read number color: %@", error.localizedDescription))
             }
             self?.isBusy = false
         }
@@ -472,23 +472,23 @@ final class AppModel: ObservableObject {
 
     func clearWalletCardCache() {
         guard let device = devices.first(where: { $0.id == selectedDeviceID }) else {
-            status = AirCardL10n.text("Selecciona un iPhone conectado.")
+            status = AirCardL10n.text("Select a connected iPhone.")
             return
         }
         guard service.validateCardHash(cardHash) != nil else {
-            status = AirCardL10n.text("Introduce o detecta el hash de tarjeta primero.")
+            status = AirCardL10n.text("Enter or detect card hash first.")
             return
         }
 
         currentTask?.cancel()
         isBusy = true
-        status = AirCardL10n.text("Eliminando las cachés renderizadas de Wallet…")
+        status = AirCardL10n.text("Removing rendered Wallet caches…")
         let rawCardHash = cardHash
         let scanToStop = scanTask
         if let scanToStop {
             scanToStop.cancel()
             isScanning = false
-            log(AirCardL10n.text("Escaneo detenido antes de limpiar la caché de Wallet…"))
+            log(AirCardL10n.text("Scan stopped before cleaning Wallet cache…"))
         }
         currentTask = Task { [weak self] in
             do {
@@ -507,15 +507,15 @@ final class AppModel: ObservableObject {
                     }
                 }
                 guard !Task.isCancelled else { return }
-                self?.cardTextColorStatus = AirCardL10n.format("Cachés eliminadas: %d. Forzar cierre de Wallet y volver a abrir.", removedCount)
+                self?.cardTextColorStatus = AirCardL10n.format("Caches removed: %d. Force close Wallet and reopen.", removedCount)
                 self?.status = AirCardL10n.text("Limpieza terminada. Cierra Wallet por completo y vuelve a abrirlo.")
-                self?.log(AirCardL10n.format("Caché de Wallet: %d archivos eliminados; Books restaurado por el helper.", removedCount))
+                self?.log(AirCardL10n.format("Wallet cache: %d files removed; Books restored by helper.", removedCount))
             } catch is CancellationError {
-                self?.status = AirCardL10n.text("Operación cancelada.")
+                self?.status = AirCardL10n.text("Operation cancelled.")
             } catch {
                 self?.cardTextColorStatus = error.localizedDescription
                 self?.status = error.localizedDescription
-                self?.log(AirCardL10n.format("Limpieza de caché fallida: %@", error.localizedDescription))
+                self?.log(AirCardL10n.format("Cache cleanup failed: %@", error.localizedDescription))
             }
             self?.isBusy = false
         }
@@ -523,24 +523,24 @@ final class AppModel: ObservableObject {
 
     func flashCardTextColor() {
         guard let device = devices.first(where: { $0.id == selectedDeviceID }) else {
-            status = AirCardL10n.text("Selecciona un iPhone conectado.")
+            status = AirCardL10n.text("Select a connected iPhone.")
             return
         }
         guard service.validateCardHash(cardHash) != nil else {
-            status = AirCardL10n.text("Introduce o detecta el hash de la tarjeta primero.")
+            status = AirCardL10n.text("Enter or detect the card hash first.")
             return
         }
 
         currentTask?.cancel()
         isBusy = true
-        status = AirCardL10n.text("Intentando cambiar el color de los números…")
+        status = AirCardL10n.text("Trying to change number color…")
         let rawCardHash = cardHash
         let color = selectedCardTextColor()
         let scanToStop = scanTask
         if let scanToStop {
             scanToStop.cancel()
             isScanning = false
-            log(AirCardL10n.text("Escaneo detenido antes de cambiar el color de los números…"))
+            log(AirCardL10n.text("Scan stopped before changing number color…"))
         }
         currentTask = Task { [weak self] in
             do {
@@ -560,15 +560,15 @@ final class AppModel: ObservableObject {
                     }
                 }
                 guard !Task.isCancelled else { return }
-                self?.cardTextColorStatus = AirCardL10n.format("Último intento: %@", color.passValue)
-                self?.status = AirCardL10n.text("Color enviado. Cierra y abre Wallet para comprobarlo.")
-                self?.log(AirCardL10n.format("Intento de color de números completado: %@.", color.passValue))
+                self?.cardTextColorStatus = AirCardL10n.format("Last attempt: %@", color.passValue)
+                self?.status = AirCardL10n.text("Color sent. Close and reopen Wallet to verify.")
+                self?.log(AirCardL10n.format("Number color attempt completed: %@.", color.passValue))
             } catch is CancellationError {
-                self?.status = AirCardL10n.text("Operación cancelada.")
+                self?.status = AirCardL10n.text("Operation cancelled.")
             } catch {
                 self?.cardTextColorStatus = error.localizedDescription
                 self?.status = error.localizedDescription
-                self?.log(AirCardL10n.format("Cambio de color de números fallido: %@", error.localizedDescription))
+                self?.log(AirCardL10n.format("Number color change failed: %@", error.localizedDescription))
             }
             self?.isBusy = false
         }
@@ -578,12 +578,12 @@ final class AppModel: ObservableObject {
         if isScanning {
             scanTask?.cancel()
             isScanning = false
-            status = AirCardL10n.text("Escaneo detenido.")
-            log(AirCardL10n.text("Escaneo de syslog detenido."))
+            status = AirCardL10n.text("Scan stopped.")
+            log(AirCardL10n.text("Syslog scan stopped."))
             return
         }
         guard let device = devices.first(where: { $0.id == selectedDeviceID }) else {
-            status = AirCardL10n.text("Selecciona un iPhone conectado.")
+            status = AirCardL10n.text("Select a connected iPhone.")
             return
         }
         do {
@@ -593,7 +593,7 @@ final class AppModel: ObservableObject {
             rawLineCount = 0
             walletEventCount = 0
             lastFocusDetection = nil
-            status = AirCardL10n.text("Abre Wallet en el iPhone y toca la tarjeta que quieres personalizar…")
+            status = AirCardL10n.text("Open Wallet on iPhone and tap the card you want to customize…")
             log(AirCardL10n.format("Escuchando syslog de %@ (%@).", device.name, device.compatibilityNote))
             scanTask = Task { [weak self] in
                 do {
@@ -605,7 +605,7 @@ final class AppModel: ObservableObject {
                     // User stopped the scanner.
                 } catch {
                     self?.status = error.localizedDescription
-                    self?.log(AirCardL10n.format("Escaneo fallido: %@", error.localizedDescription))
+                    self?.log(AirCardL10n.format("Scan failed: %@", error.localizedDescription))
                 }
                 self?.isScanning = false
             }
@@ -622,7 +622,7 @@ final class AppModel: ObservableObject {
             if let name = CardHashDetector.walletName(in: line),
                let hash = lastDetectedHash,
                let index = cards.firstIndex(where: { $0.hash == hash }),
-               cards[index].name.hasPrefix("Tarjeta "),
+               cards[index].name.hasPrefix("Card ") || cards[index].name.hasPrefix("Tarjeta "),
                Date.now.timeIntervalSince(cards[index].lastSeen) < 2 {
                 cards[index].name = name
                 CardStore.save(cards)
@@ -636,14 +636,14 @@ final class AppModel: ObservableObject {
             isNew = false
             cards[index].lastSeen = now
             cards[index].hits += 1
-            if let name = detection.name, cards[index].name.hasPrefix("Tarjeta ") {
+            if let name = detection.name, cards[index].name.hasPrefix("Card ") || cards[index].name.hasPrefix("Tarjeta ") {
                 cards[index].name = name
             }
         } else {
             isNew = true
             cards.append(WalletCard(
                 hash: detection.hash,
-                name: detection.name ?? "Tarjeta \(cards.count + 1)",
+                name: detection.name ?? "Card \(cards.count + 1)",
                 firstSeen: now,
                 lastSeen: now,
                 hits: 1
@@ -659,17 +659,17 @@ final class AppModel: ObservableObject {
         if shouldSelect, cardHash != detection.hash {
             cardHash = detection.hash
             let name = cards.first { $0.hash == detection.hash }?.name ?? detection.hash
-            status = AirCardL10n.format("Tarjeta vinculada: %@. Elige la imagen y pulsa ‘Aplicar skin’.", AirCardL10n.cardName(name))
+            status = AirCardL10n.format("Card linked: %@. Choose an image and tap "Apply Skin".", AirCardL10n.cardName(name))
         }
         if isNew {
-            log(AirCardL10n.format("Tarjeta detectada: %@ [%@]", AirCardL10n.cardName(detection.name ?? detection.hash), detection.hash))
+            log(AirCardL10n.format("Card detected: %@ [%@]", AirCardL10n.cardName(detection.name ?? detection.hash), detection.hash))
         }
     }
 
     func selectCard(_ card: WalletCard) {
         cardHash = card.hash
         followLatestCard = false
-        status = AirCardL10n.format("Tarjeta seleccionada: %@.", AirCardL10n.cardName(card.name))
+        status = AirCardL10n.format("Card selected: %@.", AirCardL10n.cardName(card.name))
     }
 
     func renameCard(_ card: WalletCard, to name: String) {
@@ -685,20 +685,20 @@ final class AppModel: ObservableObject {
         CardHistoryStore.removeAll(for: card.hash)
         cardThumbnails[card.hash] = nil
         if service.validateCardHash(cardHash) == card.hash { cardHash = "" }
-        log(AirCardL10n.format("Tarjeta olvidada: %@", AirCardL10n.cardName(card.name)))
+        log(AirCardL10n.format("Card forgotten: %@", AirCardL10n.cardName(card.name)))
     }
 
     func saveManualCard() {
         guard let hash = service.validateCardHash(cardHash) else {
-            status = AirCardL10n.text("El hash pegado no es válido.")
+            status = AirCardL10n.text("Pasted hash is not valid.")
             return
         }
         cardHash = hash
         if !cards.contains(where: { $0.hash == hash }) {
-            cards.append(WalletCard(hash: hash, name: AirCardL10n.format("Tarjeta %d", cards.count + 1), firstSeen: .now, lastSeen: .now, hits: 0))
+            cards.append(WalletCard(hash: hash, name: AirCardL10n.format("Card %d", cards.count + 1), firstSeen: .now, lastSeen: .now, hits: 0))
             CardStore.save(cards)
         }
-        status = AirCardL10n.text("Hash guardado en la lista de tarjetas.")
+        status = AirCardL10n.text("Hash saved in card list.")
     }
 
     func cancel() {
@@ -707,7 +707,7 @@ final class AppModel: ObservableObject {
         passcodePreviewTask?.cancel()
         isScanning = false
         isBusy = false
-        status = AirCardL10n.text("Operación cancelada.")
+        status = AirCardL10n.text("Operation cancelled.")
     }
 
     func log(_ message: String) {
