@@ -205,7 +205,7 @@ enum AirCardError: LocalizedError {
         case .invalidHelperOutput(let output):
             return AirCardL10n.format("The helper returned an invalid response: %@", output)
         case .noDevice:
-            return AirCardL10n.text("There is no paired and connected iPhone. Unlock it and tap "Trust".")
+            return AirCardL10n.text("There is no paired and connected iPhone. Unlock it and tap “Trust”.")
         case .invalidCardHash:
             return AirCardL10n.text("The card hash does not look like a valid Base64 identifier.")
         case .invalidTarget(let target):

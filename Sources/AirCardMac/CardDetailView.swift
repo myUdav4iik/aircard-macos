@@ -98,7 +98,7 @@ struct CardDetailView: View {
                 )
                     .foregroundStyle(.secondary)
                 if model.selectedCard?.hash == card.hash {
-                    Label("Target card for "Apply"", systemImage: "checkmark.seal.fill")
+                    Label("Target card for “Apply”", systemImage: "checkmark.seal.fill")
                         .foregroundStyle(.green)
                 }
                 if let latest = entries.first {

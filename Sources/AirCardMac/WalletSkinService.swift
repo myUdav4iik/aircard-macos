@@ -505,7 +505,7 @@ struct WalletSkinService: Sendable {
     private func diagnostic(_ result: [String: Any]) -> String {
         guard let data = try? JSONSerialization.data(withJSONObject: result, options: [.sortedKeys]),
               let text = String(data: data, encoding: .utf8) else {
-            return "resultado no serializable"
+            return "non-serializable result"
         }
         return text
     }

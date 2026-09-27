@@ -56,7 +56,7 @@ struct StudioView: View {
                 .buttonStyle(.borderedProminent)
                 .disabled(!model.isBusy && (model.selectedDeviceID.isEmpty || !model.isCardHashValid))
                 .help(model.isCardHashValid
-                    ? AirCardL10n.format("Write design to "%@"", model.targetCardLabel)
+                    ? AirCardL10n.format("Write design to “%@”", model.targetCardLabel)
                     : AirCardL10n.text("First choose a card in the sidebar"))
 
                 Button {
@@ -84,7 +84,7 @@ private struct TargetCardMenu: View {
     var body: some View {
         Menu {
             if model.cards.isEmpty {
-                Text("No cards: use "Detect from Wallet"")
+                Text("No cards: use “Detect from Wallet”")
             }
             ForEach(model.cards.sorted { $0.lastSeen > $1.lastSeen }) { card in
                 Button {

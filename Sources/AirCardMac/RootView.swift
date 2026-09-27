@@ -65,7 +65,7 @@ struct RootView: View {
                     ScanStatusRow(model: model)
                 }
                 if sortedCards.isEmpty && !model.isScanning {
-                    Text("Press "Detect from Wallet" and open the card on your iPhone.")
+                    Text("Press “Detect from Wallet” and open the card on your iPhone.")
                         .font(.caption)
                         .foregroundStyle(.secondary)
                 }
@@ -198,7 +198,7 @@ private struct DeviceRow: View {
                     }
                     .help(device.compatibilityNote)
                 } else {
-                    Text("Connect it via USB and tap "Trust"")
+                    Text("Connect it via USB and tap “Trust”")
                         .font(.caption)
                         .foregroundStyle(.secondary)
                 }

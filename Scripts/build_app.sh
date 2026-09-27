@@ -5,16 +5,22 @@ ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$ROOT"
 
 "$ROOT/Scripts/build_helpers.sh"
-swift build -c release --arch arm64
-swift build -c release --arch x86_64
+
+# Newer SwiftPM builds place every architecture in the same products folder,
+# so copy each slice out right after its build instead of assuming a
+# per-architecture .build/<arch>-apple-macosx path.
+SLICES="$(mktemp -d -t aircard-slices.XXXXXX)"
+trap 'rm -rf "$SLICES"' EXIT
+for arch in arm64 x86_64; do
+  swift build -c release --arch "$arch"
+  cp "$(swift build -c release --arch "$arch" --show-bin-path)/AirCardMac" "$SLICES/AirCardMac-$arch"
+done
 
 APP="$ROOT/build/AirCardMac.app"
 rm -rf "$APP"
 mkdir -p "$APP/Contents/MacOS" "$APP/Contents/Resources/bin"
 
-lipo -create \
-  "$ROOT/.build/arm64-apple-macosx/release/AirCardMac" \
-  "$ROOT/.build/x86_64-apple-macosx/release/AirCardMac" \
+lipo -create "$SLICES/AirCardMac-arm64" "$SLICES/AirCardMac-x86_64" \
   -output "$APP/Contents/MacOS/AirCardMac"
 cp "$ROOT/Resources/Info.plist" "$APP/Contents/Info.plist"
 cp "$ROOT/Resources/bin/device_helper" "$APP/Contents/Resources/bin/device_helper"
@@ -50,4 +56,4 @@ xattr -dr com.apple.provenance "$APP" 2>/dev/null || true
 codesign --force --deep --sign - "$APP"
 codesign --verify --deep --strict "$APP"
 
-echo "App listo: $APP"
+echo "App ready: $APP"

@@ -1,12 +1,29 @@
 # AirCard macOS
 
+**English** · [Українська](README.uk.md) · [Polski](README.pl.md)
+
 Native macOS port of the Apple Wallet card customization flow from [AirCard-Windows](https://github.com/Lumid-Off/AirCard-Windows). The UI and orchestration are written in Swift 6.2 and use Swift Concurrency for iPhone detection, image preparation, and atomic writes.
 
 > Status: tested with iPhone18,3 on iOS 27.2 (build 24B5084k). Card hash detection also supports iOS 18 (including 18.7.8). This project uses private Apple APIs and is experimental; it is not an official Apple tool.
 
-## Language
+## Languages
 
-The app now uses English for user-facing text.
+The app follows your macOS language setting (System Settings → General → Language & Region). Supported languages:
+
+| Language | Code | Status |
+| --- | --- | --- |
+| English | `en` | Complete (source language) |
+| Ukrainian (Українська) | `uk` | Complete |
+| Polish (Polski) | `pl` | Complete |
+| Brazilian Portuguese (Português) | `pt-BR` | Pending update to the new English keys; falls back to English |
+
+To force a language for testing, launch the app with `-AppleLanguages`:
+
+```sh
+open build/AirCardMac.app --args -AppleLanguages '(uk)'
+```
+
+Translations live in `Resources/<code>.lproj/Localizable.strings`. The keys are the English source strings, so a new language only needs a new `.lproj` folder and an entry in `CFBundleLocalizations` in `Resources/Info.plist`.
 
 ## Run
 
@@ -39,6 +56,22 @@ The DMG includes the universal `AirCardMac.app` for Apple Silicon and Intel.
 Connect a paired iPhone over USB, unlock it, and tap “Trust”. Open Apple Books once before the first flash. Click “Detect from Wallet”, open Apple Wallet, and tap a card. The card appears in the list, can auto-link (with “Follow the last card I open” enabled), and is saved for next time. You can rename, copy, or forget each card, or paste a hash manually. Then choose an image, optionally add transparent PNG overlays, and click “Apply Skin”.
 
 The flow preserves/restores temporary Books files and cleans generated artifacts. Only assets for the selected card are written, and cache invalidation is attempted.
+
+## How to Change a Card's Picture
+
+1. **Install:** open `AirCardMac.dmg` and drag `AirCardMac.app` to Applications. The app is ad-hoc signed, so the first time right-click it → **Open** (or allow it in System Settings → Privacy & Security).
+2. **Prepare the iPhone:** connect it with a USB cable, unlock it, and tap **Trust** on the prompt. Open **Apple Books** on the iPhone once (the app uses its sync channel to write files).
+3. **Find the card:** in the sidebar click **Detect from Wallet**. On the iPhone, open **Wallet** and tap the card you want to change. It appears under **Cards** in the sidebar. Right-click it → **Use as Target** (or keep “Follow the last card I open” enabled).
+4. **Design the picture:** open **Card Studio**. Click **Add Image** and choose your picture (or drag it onto the card), or pick one of the built-in **Styles**. Adjust fit, position, and effects in the **Inspector**. Turn on **Wallet Zones** to see which part is visible in the Wallet card stack.
+5. **Apply:** make sure the right card is selected in the card menu in the toolbar, then click **Apply**. Keep the iPhone unlocked with the screen on until the Activity log says it is done.
+6. **See the result:** force-close Wallet on the iPhone (swipe it away in the app switcher) and open it again.
+
+Tips:
+
+- Recommended image size is **1536 × 969** (the card's aspect ratio). Other sizes are scaled using the selected fit mode.
+- Every applied design is saved in the card's **Applied Skin History**, so you can reopen it in the studio or re-apply it later.
+- **To go back to the original bank design,** remove the card from Wallet and add it again. The app cannot read or back up the original artwork.
+- If nothing changes, lock and unlock the iPhone, reopen Wallet, and check the **Activity** log for errors.
 
 ## Card Studio
 

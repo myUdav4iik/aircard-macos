@@ -123,8 +123,8 @@ final class AppModel: ObservableObject {
             guard let self else { return }
             do {
                 guard let folder = try await studio.exportAssets() else { return }
-                status = AirCardL10n.format("Assets exportados en %@.", folder.lastPathComponent)
-                log(AirCardL10n.format("Assets del estudio exportados en %@", folder.path))
+                status = AirCardL10n.format("Assets exported to %@.", folder.lastPathComponent)
+                log(AirCardL10n.format("Studio assets exported to %@", folder.path))
                 NSWorkspace.shared.activateFileViewerSelecting([folder])
             } catch {
                 status = error.localizedDescription
@@ -147,11 +147,11 @@ final class AppModel: ObservableObject {
                     self?.selectedDeviceID = devices.first?.id ?? ""
                 }
                 self?.status = devices.isEmpty
-                    ? AirCardL10n.text("No iPhone found. Connect it via USB and tap "Trust".")
+                    ? AirCardL10n.text("No iPhone found. Connect it via USB and tap “Trust”.")
                     : AirCardL10n.format("Found %d iPhone(s).", devices.count)
                 self?.log(devices.isEmpty
-                    ? AirCardL10n.text("No hay dispositivos disponibles.")
-                    : AirCardL10n.format("Dispositivos: %@", devices.map(\.name).joined(separator: ", ")))
+                    ? AirCardL10n.text("No devices available.")
+                    : AirCardL10n.format("Devices: %@", devices.map(\.name).joined(separator: ", ")))
             } catch {
                 self?.status = error.localizedDescription
                 self?.log(AirCardL10n.format("Detection error: %@", error.localizedDescription))
@@ -339,7 +339,7 @@ final class AppModel: ObservableObject {
                 }
                 guard !Task.isCancelled else { return }
                 self?.status = AirCardL10n.text("Color applied. Lock the iPhone to see the keyboard.")
-                self?.log(AirCardL10n.format("Completado: %d assets en %@.", result.assetCount, result.targetVersion))
+                self?.log(AirCardL10n.format("Completed: %d assets in %@.", result.assetCount, result.targetVersion))
             } catch is CancellationError {
                 self?.status = AirCardL10n.text("Operation cancelled.")
             } catch {
@@ -411,7 +411,7 @@ final class AppModel: ObservableObject {
                 self?.status = AirCardL10n.text("Operation cancelled.")
             } catch {
                 self?.status = error.localizedDescription
-                self?.log(AirCardL10n.format("Flash fallido: %@", error.localizedDescription))
+                self?.log(AirCardL10n.format("Flash failed: %@", error.localizedDescription))
             }
             self?.isBusy = false
         }
@@ -454,8 +454,8 @@ final class AppModel: ObservableObject {
                     }
                 }
                 guard !Task.isCancelled else { return }
-                let foreground = metadata.foregroundColor ?? AirCardL10n.text("no definido")
-                let label = metadata.labelColor ?? AirCardL10n.text("no definido")
+                let foreground = metadata.foregroundColor ?? AirCardL10n.text("not set")
+                let label = metadata.labelColor ?? AirCardL10n.text("not set")
                 self?.cardTextColorStatus = AirCardL10n.format("foregroundColor: %@ · labelColor: %@", foreground, label)
                 self?.status = AirCardL10n.text("Current color read.")
                 self?.log(AirCardL10n.format("pass.json read: foregroundColor=%@, labelColor=%@.", foreground, label))
@@ -508,7 +508,7 @@ final class AppModel: ObservableObject {
                 }
                 guard !Task.isCancelled else { return }
                 self?.cardTextColorStatus = AirCardL10n.format("Caches removed: %d. Force close Wallet and reopen.", removedCount)
-                self?.status = AirCardL10n.text("Limpieza terminada. Cierra Wallet por completo y vuelve a abrirlo.")
+                self?.status = AirCardL10n.text("Cleanup finished. Fully close Wallet and open it again.")
                 self?.log(AirCardL10n.format("Wallet cache: %d files removed; Books restored by helper.", removedCount))
             } catch is CancellationError {
                 self?.status = AirCardL10n.text("Operation cancelled.")
@@ -594,7 +594,7 @@ final class AppModel: ObservableObject {
             walletEventCount = 0
             lastFocusDetection = nil
             status = AirCardL10n.text("Open Wallet on iPhone and tap the card you want to customize…")
-            log(AirCardL10n.format("Escuchando syslog de %@ (%@).", device.name, device.compatibilityNote))
+            log(AirCardL10n.format("Listening to syslog from %@ (%@).", device.name, device.compatibilityNote))
             scanTask = Task { [weak self] in
                 do {
                     for try await line in DeviceLogScanner.lines(helper: helper, udid: device.id) {
@@ -659,7 +659,7 @@ final class AppModel: ObservableObject {
         if shouldSelect, cardHash != detection.hash {
             cardHash = detection.hash
             let name = cards.first { $0.hash == detection.hash }?.name ?? detection.hash
-            status = AirCardL10n.format("Card linked: %@. Choose an image and tap "Apply Skin".", AirCardL10n.cardName(name))
+            status = AirCardL10n.format("Card linked: %@. Choose an image and tap “Apply Skin”.", AirCardL10n.cardName(name))
         }
         if isNew {
             log(AirCardL10n.format("Card detected: %@ [%@]", AirCardL10n.cardName(detection.name ?? detection.hash), detection.hash))
